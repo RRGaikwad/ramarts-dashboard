@@ -754,43 +754,6 @@ img { max-width: 100%; }
   margin-top: 10px;
 }
 
-/* ===== SCANNER SETTINGS ===== */
-.scanner-upload-box { margin-top: 8px; }
-.recent-scanners-grid {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-.recent-scanner-item {
-  width: 100px;
-  height: 100px;
-  border-radius: var(--radius-sm);
-  border: 2px solid var(--border);
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  transition: all var(--transition);
-}
-.recent-scanner-item:hover { border-color: var(--accent); }
-.recent-scanner-item.active { border-color: var(--success); box-shadow: 0 0 0 2px var(--success-bg); }
-.recent-scanner-item img { width: 100%; height: 100%; object-fit: cover; }
-.recent-scanner-item .badge-selected {
-  position: absolute;
-  top: 4px; right: 4px;
-  background: var(--success);
-  color: white;
-  font-size: 10px;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-.recent-scanner-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  text-align: center;
-  margin-top: 4px;
-}
-
 /* ===== TOAST ===== */
 .toast-container {
   position: fixed;
@@ -1451,18 +1414,14 @@ img { max-width: 100%; }
 
         <div class="settings-section">
           <div class="settings-section-title">🏢 Shop Profile</div>
-          <div class="form-grid" style="grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
             <div class="form-group">
               <label class="form-label">Shop Name</label>
               <input type="text" id="setShopName" class="form-input" placeholder="e.g. RamArts">
             </div>
             <div class="form-group">
-              <label class="form-label">Payment Scanner QR Code</label>
-              <div class="scanner-upload-box">
-                <input type="file" id="scannerInput" accept="image/*" class="hidden" onchange="App.settings.handleScannerUpload(event)">
-                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('scannerInput').click()">📁 Choose New Scanner</button>
-                <div id="recentScannersList" class="recent-scanners-grid mt-8"></div>
-              </div>
+              <label class="form-label">UPI ID (for payments)</label>
+              <input type="text" id="setUpiId" class="form-input" placeholder="e.g. ramarts@upi">
             </div>
           </div>
           <button class="btn btn-primary" onclick="App.settings.saveShopSettings()">Save Profile</button>
@@ -1645,7 +1604,6 @@ img { max-width: 100%; }
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="App.orders.closeModal()">Cancel</button>
-      <button class="btn btn-warning btn-sm" id="remindPaymentBtn" style="display:none" onclick="App.orders.sendWhatsApp(document.getElementById('orderId').value, event, 'payment_reminder')">📲 Remind Payment</button>
       <button class="btn btn-whatsapp" id="modalWhatsAppBtn" style="display:none" onclick="App.orders.sendWhatsApp(document.getElementById('orderId').value)">📲 Send Ready Alert</button>
       <button class="btn btn-danger btn-sm" id="duplicateBtn" onclick="App.orders.duplicate()" style="display:none">⧉ Duplicate</button>
       <button class="btn btn-danger btn-sm" id="deleteOrderBtn" onclick="App.orders.deleteOrder()" style="display:none">🗑️ Delete</button>
@@ -1740,34 +1698,6 @@ img { max-width: 100%; }
       <button class="btn btn-secondary" onclick="App.inventory.closeModal()">Cancel</button>
       <button class="btn btn-danger btn-sm" id="deleteInvBtn" onclick="App.inventory.deleteItem()" style="display:none">🗑️ Delete</button>
       <button class="btn btn-primary" onclick="App.inventory.save()">💾 Save Material</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== PAYMENT REMINDER MODAL ===== -->
-<div class="modal-overlay" id="paymentReminderModal">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-header">
-      <div class="modal-title">Payment Reminder</div>
-      <button class="modal-close" onclick="document.getElementById('paymentReminderModal').classList.remove('open')">✕</button>
-    </div>
-    <div class="modal-body" style="text-align:center">
-      <div id="reminderQRContainer" style="margin-bottom:20px; padding:15px; background:white; border-radius:12px; border:1px solid var(--border)">
-        <img id="reminderQRImage" src="" style="width:200px; height:200px; object-fit:contain; display:block; margin:0 auto">
-        <p style="font-size:11px; color:var(--text-muted); margin-top:8px">Scanner QR Code</p>
-      </div>
-      <div class="reminder-text-box" style="background:var(--bg-main); padding:12px; border-radius:8px; text-align:left; font-size:13px; border:1px solid var(--border); margin-bottom:16px; white-space:pre-wrap" id="reminderTextContent"></div>
-      
-      <div id="reminderStepGuide" style="font-size:12px; color:var(--accent); font-weight:600; margin-bottom:12px; display:none">
-        ✨ QR Image & Text will be copied automatically!
-      </div>
-
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px">
-        <button class="btn btn-secondary btn-sm" onclick="App.orders.copyReminderText()">📋 Copy Text</button>
-        <button class="btn btn-secondary btn-sm" id="copyQRBtn" onclick="App.orders.copyReminderQR()">🖼️ Copy Image</button>
-      </div>
-      <button class="btn btn-whatsapp" style="width:100%; justify-content:center" id="finalWhatsAppBtn">📲 Copy & Open WhatsApp</button>
-      <p style="font-size:10px; color:var(--text-muted); margin-top:8px">Note: After WhatsApp opens, just <b>Paste (Ctrl+V)</b> to send the scanner image.</p>
     </div>
   </div>
 </div>
@@ -2008,7 +1938,7 @@ const App = {
     serviceTypes: [],
     shopSettings: {
       shopName: 'RamArts',
-      recentScanners: [] // Store up to 3 dataURLs
+      upiId: ''
     },
     currentPeriod: 'month',
     customFrom: null,
@@ -2025,7 +1955,7 @@ const App = {
       this.state.expenses = await DB.getAll('expenses') || [];
       this.state.inventory = await DB.getAll('inventory') || [];
       this.state.serviceTypes = await DB.getSetting('serviceTypes', DEFAULT_SERVICES) || DEFAULT_SERVICES;
-      this.state.shopSettings = await DB.getSetting('shopSettings', { shopName: 'RamArts', recentScanners: [] });
+      this.state.shopSettings = await DB.getSetting('shopSettings', { shopName: 'RamArts', upiId: '' });
 
       // Restore state from localStorage
       this.state.currentPeriod = localStorage.getItem('ramarts_dashboard_period') || 'month';
@@ -2277,12 +2207,11 @@ const App = {
       }
       el.innerHTML = pending.slice(0, 10).map(o => `
         <div class="balance-row" onclick="App.orders.openEdit('${o.id}')">
-          <div style="flex:1">
+          <div>
             <div style="font-weight:600;font-size:14px">${o.customerName}</div>
             <div class="text-muted">${o.serviceType} &nbsp;|&nbsp; Due: ${Util.fmtDate(o.deliveryDate)}</div>
           </div>
           <div style="display:flex;align-items:center;gap:10px">
-            ${o.customerPhone ? `<button class="btn btn-icon btn-sm btn-whatsapp" title="Send Payment Reminder" onclick="event.stopPropagation(); App.orders.sendWhatsApp('${o.id}', event, 'payment_reminder')">📲</button>` : ''}
             <span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span>
             <span class="balance-amount">${Util.fmtCurrency(o.balanceDue)}</span>
           </div>
@@ -2536,14 +2465,15 @@ const App = {
 
       const phone = Util.cleanPhone(order.customerPhone);
       const shop = App.state.shopSettings.shopName || 'RamArts';
-      const hasScanner = App.state.shopSettings.recentScanners && App.state.shopSettings.recentScanners.length > 0;
+      const upi = App.state.shopSettings.upiId;
       let msg = '';
 
       if (type === 'payment_reminder') {
         msg = `Hi ${order.customerName}, this is a polite reminder regarding your order *${order.orderNumber}* (${order.serviceType}) at *${shop}*.\n\n`;
         msg += `There is a pending balance of *${Util.fmtCurrency(order.balanceDue)}*.\n\n`;
-        if (hasScanner) {
-          msg += `Please complete the payment by scanning our shop's QR code. 🙏\n\n`;
+        if (upi) {
+          msg += `You can complete the payment via UPI to: *${upi}*\n`;
+          msg += `Or scan the QR code at our shop counter. 🙏\n\n`;
         } else {
           msg += `Please complete the payment by scanning the QR code at our shop counter. 🙏\n\n`;
         }
@@ -2552,7 +2482,7 @@ const App = {
         msg = `Hi ${order.customerName}, your order *${order.orderNumber}* (${order.serviceType}) is *Ready for Pickup*! 🥳\n\n`;
         if (Number(order.balanceDue) > 0) {
           msg += `Balance due: *${Util.fmtCurrency(order.balanceDue)}*.\n\n`;
-          if (hasScanner) msg += `You can pay by scanning our QR code at the counter.\n\n`;
+          if (upi) msg += `You can pay via UPI: *${upi}*\n\n`;
         }
         msg += `Please visit our shop at your convenience. Thank you! - ${shop}`;
       } else if (order.status === 'delivered') {
@@ -2561,82 +2491,8 @@ const App = {
         msg = `Hi ${order.customerName}, regarding your order *${order.orderNumber}* (${order.serviceType}) at ${shop}...`;
       }
 
-      if (type === 'payment_reminder') {
-        this.showPaymentReminderPreview(order, msg);
-        return;
-      }
-
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
       window.open(url, '_blank');
-    },
-
-    showPaymentReminderPreview(order, msg) {
-      const modal = document.getElementById('paymentReminderModal');
-      const img = document.getElementById('reminderQRImage');
-      const text = document.getElementById('reminderTextContent');
-      const whatsappBtn = document.getElementById('finalWhatsAppBtn');
-      const qrContainer = document.getElementById('reminderQRContainer');
-      
-      const scanner = App.state.shopSettings.recentScanners?.[0];
-      
-      if (scanner) {
-        img.src = scanner;
-        qrContainer.style.display = 'block';
-        document.getElementById('copyQRBtn').style.display = 'block';
-      } else {
-        qrContainer.style.display = 'none';
-        document.getElementById('copyQRBtn').style.display = 'none';
-      }
-      
-      text.textContent = msg;
-      
-      if (scanner) {
-        document.getElementById('reminderStepGuide').style.display = 'block';
-      } else {
-        document.getElementById('reminderStepGuide').style.display = 'none';
-      }
-      
-      const phone = Util.cleanPhone(order.customerPhone);
-      whatsappBtn.onclick = async () => {
-        // Try to copy QR automatically first
-        if (scanner) {
-          await this.copyReminderQR(true); // silent copy
-        } else {
-          await this.copyReminderText(true); // silent copy
-        }
-        
-        const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-        window.open(url, '_blank');
-      };
-      
-      modal.classList.add('open');
-    },
-
-    async copyReminderText(silent = false) {
-      const text = document.getElementById('reminderTextContent').textContent;
-      try {
-        await navigator.clipboard.writeText(text);
-        if (!silent) toast('Message copied!', 'success');
-      } catch (err) {
-        if (!silent) toast('Failed to copy', 'error');
-      }
-    },
-
-    async copyReminderQR(silent = false) {
-      const scanner = App.state.shopSettings.recentScanners?.[0];
-      if (!scanner) return;
-      
-      try {
-        const response = await fetch(scanner);
-        const blob = await response.blob();
-        await navigator.clipboard.write([
-          new ClipboardItem({ [blob.type]: blob })
-        ]);
-        if (!silent) toast('QR Code copied to clipboard!', 'success');
-      } catch (err) {
-        console.error('Clipboard error:', err);
-        if (!silent) toast('Failed to auto-copy image. Please copy manually.', 'warning');
-      }
     },
 
     init() {
@@ -2749,7 +2605,6 @@ const App = {
       document.getElementById('deleteOrderBtn').style.display = 'none';
       document.getElementById('duplicateBtn').style.display = 'none';
       document.getElementById('modalWhatsAppBtn').style.display = 'none';
-      document.getElementById('remindPaymentBtn').style.display = 'none';
       this.renderExpenseRows();
       this.calcBalance(); // Ensure Paid button state is reset
       document.getElementById('orderModal').classList.add('open');
@@ -2777,7 +2632,6 @@ const App = {
       document.getElementById('deleteOrderBtn').style.display = 'inline-flex';
       document.getElementById('duplicateBtn').style.display = 'inline-flex';
       document.getElementById('modalWhatsAppBtn').style.display = order.customerPhone ? 'inline-flex' : 'none';
-      document.getElementById('remindPaymentBtn').style.display = (order.customerPhone && Number(order.balanceDue) > 0) ? 'inline-flex' : 'none';
       if (order.status === 'ready') {
         document.getElementById('modalWhatsAppBtn').textContent = '📲 Send Ready Alert';
       } else {
@@ -2791,12 +2645,9 @@ const App = {
     updateModalWhatsAppBtn() {
       const phone = document.getElementById('fCustomerPhone').value.trim();
       const status = document.getElementById('fStatus').value;
-      const balance = Number(document.getElementById('fBalanceDue').value) || 0;
       const btn = document.getElementById('modalWhatsAppBtn');
-      const remindBtn = document.getElementById('remindPaymentBtn');
       
       btn.style.display = phone ? 'inline-flex' : 'none';
-      remindBtn.style.display = (phone && balance > 0) ? 'inline-flex' : 'none';
       if (status === 'ready') {
         btn.textContent = '📲 Send Ready Alert';
       } else {
@@ -3607,8 +3458,8 @@ const App = {
           </div>
           ${!pending.length ? '<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">All balances collected!</div></div>' : `
           <table class="report-table">
-            <thead><tr><th>Order #</th><th>Customer</th><th>Phone</th><th>Service</th><th>Status</th><th>Delivery Date</th><th>Balance Due</th><th>Remind</th></tr></thead>
-            <tbody>${pending.map(o => `<tr><td class="font-mono"><a href="javascript:void(0)" onclick="App.nav.go('orders'); App.orders.openEdit('${o.id}')" class="text-primary" style="text-decoration:none; font-weight:600">${o.orderNumber}</a></td><td>${o.customerName}</td><td>${o.customerPhone||'—'}</td><td>${o.serviceType}</td><td><span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span></td><td>${Util.fmtDate(o.deliveryDate)}${Util.isOverdue(o)?'<span class="overdue-badge" style="margin-left:4px">Overdue</span>':''}</td><td class="text-danger" style="font-weight:700">${Util.fmtCurrency(o.balanceDue)}</td><td>${o.customerPhone ? `<button class="btn btn-icon btn-sm btn-whatsapp" title="Send Reminder" onclick="App.orders.sendWhatsApp('${o.id}', event, 'payment_reminder')">📲</button>` : '—'}</td></tr>`).join('')}</tbody>
+            <thead><tr><th>Order #</th><th>Customer</th><th>Phone</th><th>Service</th><th>Status</th><th>Delivery Date</th><th>Balance Due</th></tr></thead>
+            <tbody>${pending.map(o => `<tr><td class="font-mono"><a href="javascript:void(0)" onclick="App.nav.go('orders'); App.orders.openEdit('${o.id}')" class="text-primary" style="text-decoration:none; font-weight:600">${o.orderNumber}</a></td><td>${o.customerName}</td><td>${o.customerPhone||'—'}</td><td>${o.serviceType}</td><td><span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span></td><td>${Util.fmtDate(o.deliveryDate)}${Util.isOverdue(o)?'<span class="overdue-badge" style="margin-left:4px">Overdue</span>':''}</td><td class="text-danger" style="font-weight:700">${Util.fmtCurrency(o.balanceDue)}</td></tr>`).join('')}</tbody>
           </table>`}
         </div>
       `;
@@ -3837,82 +3688,14 @@ const App = {
     render() {
       this.renderServiceList();
       document.getElementById('setShopName').value = App.state.shopSettings.shopName || '';
-      this.renderRecentScanners();
-    },
-
-    renderRecentScanners() {
-      const el = document.getElementById('recentScannersList');
-      const recent = App.state.shopSettings.recentScanners || [];
-      
-      if (!recent.length) {
-        el.innerHTML = '<div style="font-size:12px; color:var(--text-muted); padding:10px; border:1px dashed var(--border); border-radius:var(--radius-sm); width:100%">No scanner images uploaded yet.</div>';
-        return;
-      }
-
-      el.innerHTML = recent.map((img, i) => `
-        <div class="recent-scanner-wrap">
-          <div class="recent-scanner-item ${i === 0 ? 'active' : ''}" onclick="App.settings.selectScanner(${i})">
-            <img src="${img}" alt="Scanner ${i+1}">
-            ${i === 0 ? '<span class="badge-selected">Selected</span>' : ''}
-          </div>
-          <div class="recent-scanner-label">${i === 0 ? 'Current' : 'Recent ' + i}</div>
-        </div>
-      `).join('');
-    },
-
-    async handleScannerUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        toast('Please select an image file', 'error');
-        return;
-      }
-
-      // Max 5MB check
-      if (file.size > 5 * 1024 * 1024) {
-        toast('Image too large. Max 5MB allowed.', 'error');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const dataUrl = e.target.result;
-        
-        // Add to recent (index 0 is active)
-        let recent = App.state.shopSettings.recentScanners || [];
-        // Filter out if already exists to avoid duplicates
-        recent = recent.filter(img => img !== dataUrl);
-        // Add to front
-        recent.unshift(dataUrl);
-        // Limit to 3
-        if (recent.length > 3) recent = recent.slice(0, 3);
-        
-        App.state.shopSettings.recentScanners = recent;
-        await DB.setSetting('shopSettings', App.state.shopSettings);
-        this.renderRecentScanners();
-        toast('Scanner image updated!', 'success');
-      };
-      reader.readAsDataURL(file);
-    },
-
-    async selectScanner(index) {
-      let recent = App.state.shopSettings.recentScanners || [];
-      if (index === 0) return; // Already selected
-
-      const selected = recent.splice(index, 1)[0];
-      recent.unshift(selected);
-      
-      App.state.shopSettings.recentScanners = recent;
-      await DB.setSetting('shopSettings', App.state.shopSettings);
-      this.renderRecentScanners();
-      toast('Scanner changed!', 'success');
+      document.getElementById('setUpiId').value = App.state.shopSettings.upiId || '';
     },
 
     async saveShopSettings() {
       const shopName = document.getElementById('setShopName').value.trim();
+      const upiId = document.getElementById('setUpiId').value.trim();
       
-      App.state.shopSettings.shopName = shopName;
+      App.state.shopSettings = { shopName, upiId };
       await DB.setSetting('shopSettings', App.state.shopSettings);
       toast('Shop profile updated!', 'success');
     },
