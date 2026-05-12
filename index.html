@@ -1604,6 +1604,7 @@ img { max-width: 100%; }
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="App.orders.closeModal()">Cancel</button>
+      <button class="btn btn-warning btn-sm" id="remindPaymentBtn" style="display:none" onclick="App.orders.sendWhatsApp(document.getElementById('orderId').value, event, 'payment_reminder')">📲 Remind Payment</button>
       <button class="btn btn-whatsapp" id="modalWhatsAppBtn" style="display:none" onclick="App.orders.sendWhatsApp(document.getElementById('orderId').value)">📲 Send Ready Alert</button>
       <button class="btn btn-danger btn-sm" id="duplicateBtn" onclick="App.orders.duplicate()" style="display:none">⧉ Duplicate</button>
       <button class="btn btn-danger btn-sm" id="deleteOrderBtn" onclick="App.orders.deleteOrder()" style="display:none">🗑️ Delete</button>
@@ -2207,11 +2208,12 @@ const App = {
       }
       el.innerHTML = pending.slice(0, 10).map(o => `
         <div class="balance-row" onclick="App.orders.openEdit('${o.id}')">
-          <div>
+          <div style="flex:1">
             <div style="font-weight:600;font-size:14px">${o.customerName}</div>
             <div class="text-muted">${o.serviceType} &nbsp;|&nbsp; Due: ${Util.fmtDate(o.deliveryDate)}</div>
           </div>
           <div style="display:flex;align-items:center;gap:10px">
+            ${o.customerPhone ? `<button class="btn btn-icon btn-sm btn-whatsapp" title="Send Payment Reminder" onclick="event.stopPropagation(); App.orders.sendWhatsApp('${o.id}', event, 'payment_reminder')">📲</button>` : ''}
             <span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span>
             <span class="balance-amount">${Util.fmtCurrency(o.balanceDue)}</span>
           </div>
@@ -2605,6 +2607,7 @@ const App = {
       document.getElementById('deleteOrderBtn').style.display = 'none';
       document.getElementById('duplicateBtn').style.display = 'none';
       document.getElementById('modalWhatsAppBtn').style.display = 'none';
+      document.getElementById('remindPaymentBtn').style.display = 'none';
       this.renderExpenseRows();
       this.calcBalance(); // Ensure Paid button state is reset
       document.getElementById('orderModal').classList.add('open');
@@ -2632,6 +2635,7 @@ const App = {
       document.getElementById('deleteOrderBtn').style.display = 'inline-flex';
       document.getElementById('duplicateBtn').style.display = 'inline-flex';
       document.getElementById('modalWhatsAppBtn').style.display = order.customerPhone ? 'inline-flex' : 'none';
+      document.getElementById('remindPaymentBtn').style.display = (order.customerPhone && Number(order.balanceDue) > 0) ? 'inline-flex' : 'none';
       if (order.status === 'ready') {
         document.getElementById('modalWhatsAppBtn').textContent = '📲 Send Ready Alert';
       } else {
@@ -2645,9 +2649,12 @@ const App = {
     updateModalWhatsAppBtn() {
       const phone = document.getElementById('fCustomerPhone').value.trim();
       const status = document.getElementById('fStatus').value;
+      const balance = Number(document.getElementById('fBalanceDue').value) || 0;
       const btn = document.getElementById('modalWhatsAppBtn');
+      const remindBtn = document.getElementById('remindPaymentBtn');
       
       btn.style.display = phone ? 'inline-flex' : 'none';
+      remindBtn.style.display = (phone && balance > 0) ? 'inline-flex' : 'none';
       if (status === 'ready') {
         btn.textContent = '📲 Send Ready Alert';
       } else {
@@ -3458,8 +3465,8 @@ const App = {
           </div>
           ${!pending.length ? '<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">All balances collected!</div></div>' : `
           <table class="report-table">
-            <thead><tr><th>Order #</th><th>Customer</th><th>Phone</th><th>Service</th><th>Status</th><th>Delivery Date</th><th>Balance Due</th></tr></thead>
-            <tbody>${pending.map(o => `<tr><td class="font-mono"><a href="javascript:void(0)" onclick="App.nav.go('orders'); App.orders.openEdit('${o.id}')" class="text-primary" style="text-decoration:none; font-weight:600">${o.orderNumber}</a></td><td>${o.customerName}</td><td>${o.customerPhone||'—'}</td><td>${o.serviceType}</td><td><span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span></td><td>${Util.fmtDate(o.deliveryDate)}${Util.isOverdue(o)?'<span class="overdue-badge" style="margin-left:4px">Overdue</span>':''}</td><td class="text-danger" style="font-weight:700">${Util.fmtCurrency(o.balanceDue)}</td></tr>`).join('')}</tbody>
+            <thead><tr><th>Order #</th><th>Customer</th><th>Phone</th><th>Service</th><th>Status</th><th>Delivery Date</th><th>Balance Due</th><th>Remind</th></tr></thead>
+            <tbody>${pending.map(o => `<tr><td class="font-mono"><a href="javascript:void(0)" onclick="App.nav.go('orders'); App.orders.openEdit('${o.id}')" class="text-primary" style="text-decoration:none; font-weight:600">${o.orderNumber}</a></td><td>${o.customerName}</td><td>${o.customerPhone||'—'}</td><td>${o.serviceType}</td><td><span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span></td><td>${Util.fmtDate(o.deliveryDate)}${Util.isOverdue(o)?'<span class="overdue-badge" style="margin-left:4px">Overdue</span>':''}</td><td class="text-danger" style="font-weight:700">${Util.fmtCurrency(o.balanceDue)}</td><td>${o.customerPhone ? `<button class="btn btn-icon btn-sm btn-whatsapp" title="Send Reminder" onclick="App.orders.sendWhatsApp('${o.id}', event, 'payment_reminder')">📲</button>` : '—'}</td></tr>`).join('')}</tbody>
           </table>`}
         </div>
       `;
