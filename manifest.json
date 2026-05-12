@@ -1,0 +1,22 @@
+{
+  "name": "RamArts Print Shop Manager",
+  "short_name": "RamArts",
+  "description": "Business performance tracking for print & signage shops",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#12121e",
+  "theme_color": "#e67e22",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='24' fill='%23e67e22'/%3E%3Ctext x='96' y='136' font-size='96' text-anchor='middle'%3E%F0%9F%96%A8%EF%B8%8F%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%23e67e22'/%3E%3Ctext x='256' y='360' font-size='256' text-anchor='middle'%3E%F0%9F%96%A8%EF%B8%8F%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

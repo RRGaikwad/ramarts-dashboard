@@ -1,0 +1,3954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="description" content="RamArts Business Performance Tracking PWA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RamArts">
+<title>RamArts — Print Shop Manager</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<style>
+/* ===== CSS VARIABLES ===== */
+:root {
+  --bg-sidebar: #12121e;
+  --bg-sidebar-hover: #1e1e35;
+  --bg-main: #f5f3ef;
+  --bg-card: #ffffff;
+  --bg-input: #faf9f7;
+  --accent: #e67e22;
+  --accent-light: #f39c12;
+  --accent-bg: #fef5ec;
+  --text-primary: #1a1a2e;
+  --text-secondary: #5a5a7a;
+  --text-muted: #9898b0;
+  --text-sidebar: #c8c8e0;
+  --text-sidebar-active: #ffffff;
+  --border: #e8e6e1;
+  --border-light: #f0eee9;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+  --status-pending: #f59e0b;
+  --status-pending-bg: #fffbeb;
+  --status-progress: #3b82f6;
+  --status-progress-bg: #eff6ff;
+  --status-ready: #10b981;
+  --status-ready-bg: #ecfdf5;
+  --status-delivered: #6b7280;
+  --status-delivered-bg: #f9fafb;
+  --danger: #ef4444;
+  --danger-bg: #fef2f2;
+  --success: #10b981;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --sidebar-w: 240px;
+  --nav-h: 64px;
+  --font-head: 'Poppins', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --transition: 0.2s ease;
+}
+
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+input, select, textarea, button { font-family: inherit; font-size: inherit; }
+button { cursor: pointer; border: none; background: none; }
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+img { max-width: 100%; }
+
+/* ===== LAYOUT ===== */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR (Desktop) ===== */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform var(--transition);
+}
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.brand-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.brand-name {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 18px;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+.brand-tagline {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-sidebar);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  user-select: none;
+}
+.nav-item:hover {
+  background: var(--bg-sidebar-hover);
+  color: #fff;
+}
+.nav-item.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(230,126,34,0.35);
+}
+.nav-icon { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; }
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.sidebar-footer .nav-item { margin: 0; }
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.page-header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.page-title {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.page-body {
+  padding: 24px 28px;
+  flex: 1;
+}
+
+/* ===== BOTTOM NAV (Mobile) ===== */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg-sidebar);
+  height: var(--nav-h);
+  z-index: 100;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-sidebar);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition);
+  min-width: 52px;
+}
+.bottom-nav-item .nav-icon { font-size: 20px; width: auto; }
+.bottom-nav-item.active { color: var(--accent-light); }
+.fab-btn {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(230,126,34,0.5);
+  margin-top: -20px;
+  cursor: pointer;
+  border: 3px solid var(--bg-sidebar);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.fab-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(230,126,34,0.6); }
+
+/* ===== SCREEN MANAGEMENT ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== SUMMARY CARDS ===== */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.summary-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+.summary-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.summary-card.accent { background: linear-gradient(135deg, var(--accent), var(--accent-light)); color: #fff; border: none; }
+.summary-card.accent .sc-label, .summary-card.accent .sc-sub { color: rgba(255,255,255,0.8); }
+.sc-icon { font-size: 22px; }
+.sc-label { font-size: 12px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.3px; }
+.sc-value {
+  font-family: var(--font-head);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.summary-card.accent .sc-value { color: #fff; }
+.sc-sub { font-size: 12px; color: var(--text-muted); }
+
+/* ===== CHARTS ===== */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.chart-card { background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border-light); padding: 20px; box-shadow: var(--shadow-sm); }
+.chart-card canvas { max-height: 220px; }
+.chart-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 16px; }
+
+/* ===== PERIOD FILTER ===== */
+.period-filter {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-main);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  width: fit-content;
+}
+.period-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none;
+  background: none;
+}
+.period-btn.active {
+  background: var(--bg-card);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(230,126,34,0.3);
+}
+.btn-primary:hover { box-shadow: 0 4px 14px rgba(230,126,34,0.45); transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--bg-main);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--border-light); }
+.btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #fecaca; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #0ca678; }
+.btn-whatsapp {
+  background: #25D366;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+.btn-whatsapp:hover {
+  background: #128C7E;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.45);
+  transform: translateY(-1px);
+}
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-icon { padding: 8px; border-radius: var(--radius-sm); }
+
+/* ===== STATUS BADGES ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-pending { background: var(--status-pending-bg); color: var(--status-pending); }
+.badge-in_progress { background: var(--status-progress-bg); color: var(--status-progress); }
+.badge-ready { background: var(--status-ready-bg); color: var(--status-ready); }
+.badge-delivered { background: var(--status-delivered-bg); color: var(--status-delivered); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* ===== FORMS ===== */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.form-label .req { color: var(--accent); }
+.form-input, .form-select, .form-textarea {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: border-color var(--transition);
+  outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent);
+  background: #fff;
+}
+.form-input[readonly] { color: var(--text-muted); cursor: not-allowed; }
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* ===== PRICING CALCULATOR ===== */
+.pricing-calc-box {
+  background: var(--accent-bg);
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-top: 10px;
+}
+.calc-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.calc-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.calc-result {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* ===== KANBAN BOARD ===== */
+.kanban-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  min-height: calc(100vh - 250px);
+}
+.kanban-column {
+  flex: 0 0 300px;
+  background: var(--accent-bg);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--border-light);
+}
+.kanban-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px 12px;
+  border-bottom: 2px solid rgba(0,0,0,0.05);
+  margin-bottom: 4px;
+}
+.kanban-column-title {
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kanban-card {
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-left: 4px solid var(--accent);
+}
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.kanban-card.status-pending { border-left-color: #ffd43b; }
+.kanban-card.status-in_progress { border-left-color: #339af0; }
+.kanban-card.status-ready { border-left-color: #51cf66; }
+
+.kanban-card-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.kanban-card-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+.kanban-card-actions { display: flex; gap: 6px; border-top: 1px solid var(--border-light); padding-top: 8px; margin-top: 8px; }
+
+.btn-icon-sm { padding: 4px; border-radius: 4px; font-size: 12px; }
+
+@media (max-width: 768px) {
+  .kanban-column { flex: 0 0 260px; }
+}
+
+.form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239898b0' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header {
+  padding: 24px 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0;
+  background: var(--bg-card);
+  z-index: 1;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.modal-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+.modal-close { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); cursor: pointer; transition: all var(--transition); }
+.modal-close:hover { background: var(--danger-bg); color: var(--danger); }
+.modal-body { padding: 20px 24px; }
+.modal-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 16px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-light);
+}
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-light); display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ===== ORDER CARDS ===== */
+.orders-grid { display: flex; flex-direction: column; gap: 10px; }
+.order-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.order-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); border-color: var(--accent); }
+/* removed empty .order-card-left rule */
+.order-num { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.order-customer { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+.order-service { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+.order-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.order-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.order-amount { font-family: var(--font-head); font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.order-balance { font-size: 12px; color: var(--danger); font-weight: 500; }
+.order-date { font-size: 12px; color: var(--text-muted); }
+.meta-chip { font-size: 11px; color: var(--text-muted); background: var(--bg-main); padding: 3px 8px; border-radius: 4px; }
+
+/* ===== SEARCH & FILTER BAR ===== */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-input-wrap {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+.search-input-wrap .search-icon {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.search-input-wrap input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.search-input-wrap input:focus { border-color: var(--accent); }
+.filter-select {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  min-width: 130px;
+}
+
+/* ===== EXPENSE ITEMS ===== */
+.expense-section-title {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 0;
+  margin-top: 8px;
+}
+.expense-row {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1.5fr 80px 100px 40px;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+@media (max-width: 600px) {
+  .expense-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.expense-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  transition: opacity var(--transition);
+}
+.expense-add-btn:hover { opacity: 0.75; }
+
+/* ===== PENDING BALANCES ===== */
+.balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-main);
+  border: 1px solid var(--border-light);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.balance-row:hover { border-color: var(--accent); background: var(--accent-bg); }
+.balance-amount { font-family: var(--font-head); font-weight: 700; color: var(--danger); font-size: 15px; }
+
+/* ===== REPORTS ===== */
+.report-header-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.report-table th {
+  background: var(--bg-main);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 2px solid var(--border);
+}
+.report-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+.report-table tr:hover td { background: var(--bg-main); }
+
+/* ===== SETTINGS ===== */
+.settings-section { margin-bottom: 28px; }
+.settings-section-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.service-list { display: flex; flex-direction: column; gap: 8px; }
+.service-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 14px;
+}
+.service-actions { display: flex; gap: 6px; }
+.add-service-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* ===== TOAST ===== */
+.toast-container {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--text-primary);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 320px;
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.toast.warning { background: var(--status-pending); color: var(--text-primary); }
+@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+
+/* ===== CONFIRM DIALOG ===== */
+.confirm-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 300;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.confirm-overlay.open { display: flex; }
+.confirm-box {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 28px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease;
+  text-align: center;
+}
+.confirm-icon { font-size: 40px; margin-bottom: 12px; }
+.confirm-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.confirm-msg { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* ===== DETAIL VIEW ===== */
+.detail-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 20px 0 10px;
+}
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* removed empty .detail-item rule */
+.detail-label { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+.detail-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.detail-amount { font-family: var(--font-head); font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.profit-positive { color: var(--success); }
+.profit-negative { color: var(--danger); }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+.empty-title { font-family: var(--font-head); font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
+.empty-msg { font-size: 14px; line-height: 1.5; }
+
+/* ===== SECTION DIVIDER ===== */
+.section-divider { height: 1px; background: var(--border-light); margin: 20px 0; }
+
+/* ===== OVERDUE BADGE ===== */
+.overdue-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; background: var(--danger-bg); color: var(--danger); font-size: 11px; font-weight: 600; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .main-content { margin-left: 0; padding-bottom: var(--nav-h); }
+  .bottom-nav { display: flex; }
+  .page-body { padding: 16px; }
+  .page-header { padding: 14px 16px; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .order-card { grid-template-columns: 1fr; }
+  .order-card-right { flex-direction: row; align-items: center; justify-content: space-between; }
+  .expense-row { grid-template-columns: 1fr 1fr 90px 36px; }
+  .toast-container { bottom: calc(var(--nav-h) + 16px); right: 12px; left: 12px; }
+  .toast { max-width: 100%; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .report-table { font-size: 13px; }
+  .report-table th, .report-table td { padding: 8px 10px; }
+}
+@media (max-width: 480px) {
+  .summary-grid { grid-template-columns: 1fr; }
+  .sc-value { font-size: 20px; }
+  .search-bar { flex-direction: column; }
+  .filter-select { width: 100%; }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* ===== UTIL ===== */
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.mb-4 { margin-bottom: 4px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-20 { margin-bottom: 20px; }
+.text-right { text-align: right; }
+.text-muted { color: var(--text-muted); font-size: 13px; }
+.text-danger { color: var(--danger); }
+.text-success { color: var(--success); }
+.text-accent { color: var(--accent); }
+.font-mono { font-family: var(--font-mono); }
+.rupee { font-family: var(--font-head); }
+.w-full { width: 100%; }
+.hidden { display: none !important; }
+.loading-spinner {
+  display: inline-block; width: 20px; height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  @page {
+    margin: 12mm;
+    size: auto;
+  }
+  
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    overflow: visible !important;
+  }
+
+  .sidebar, 
+  .bottom-nav, 
+  .page-header, 
+  .btn, 
+  .period-filter, 
+  .search-bar, 
+  .modal-overlay, 
+  .confirm-overlay, 
+  .toast-container, 
+  .fab-btn, 
+  .sidebar-footer,
+  .report-header-controls,
+  .add-service-row,
+  .settings-section:not(.data-mgmt),
+  .section-divider {
+    display: none !important;
+  }
+
+  .app-layout {
+    display: block !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    display: block !important;
+    min-height: auto !important;
+  }
+
+  .page-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .screen {
+    display: none !important;
+    overflow: visible !important;
+  }
+  
+  .screen.active {
+    display: block !important;
+  }
+
+  .card {
+    border: 1px solid #eee !important;
+    box-shadow: none !important;
+    padding: 15px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Allow report cards to break across pages if they are long */
+  #screen-reports .card {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .card-title {
+    font-size: 16px !important;
+    color: #000 !important;
+    margin-bottom: 12px !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+  }
+
+  .report-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto;
+  }
+
+  .report-table th {
+    background: #f8f9fa !important;
+    color: #000 !important;
+    border: 1px solid #ddd !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .report-table td {
+    border: 1px solid #eee !important;
+    color: #000 !important;
+    padding: 8px 10px !important;
+  }
+
+  .report-table tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  .summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .summary-card {
+    border: 1px solid #eee !important;
+    box-shadow: none !important;
+    padding: 12px !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .summary-card.accent {
+    background: #f8f9fa !important;
+    color: #000 !important;
+    border: 1.5px solid #ddd !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .summary-card.accent .sc-value,
+  .summary-card.accent .sc-label,
+  .summary-card.accent .sc-sub {
+    color: #000 !important;
+  }
+
+  .sc-value {
+    font-size: 20px !important;
+  }
+
+  .charts-grid {
+    display: none !important;
+  }
+
+  .badge {
+    border: 1px solid #ddd !important;
+    background: transparent !important;
+    color: #000 !important;
+    padding: 2px 6px !important;
+  }
+  
+  .text-danger { color: #d00 !important; }
+  .text-success { color: #080 !important; }
+  
+  /* Force long lists to be visible */
+  #reportContent, #ordersList, #generalExpensesList {
+    overflow: visible !important;
+    display: block !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== APP LAYOUT ===== -->
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <div class="brand-icon">🖨️</div>
+        <span class="brand-name">RamArts</span>
+      </div>
+      <div class="brand-tagline">Print &amp; Signage Manager</div>
+    </div>
+    <ul class="sidebar-nav">
+      <li class="nav-item active" data-screen="dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </li>
+      <li class="nav-item" data-screen="orders">
+        <span class="nav-icon">📝</span> Orders
+      </li>
+      <li class="nav-item" data-screen="production">
+        <span class="nav-icon">🏭</span> Production
+      </li>
+      <li class="nav-item" data-screen="expenses">
+        <span class="nav-icon">💸</span> Expenses
+      </li>
+      <li class="nav-item" data-screen="inventory">
+        <span class="nav-icon">📦</span> Inventory
+      </li>
+      <li class="nav-item" data-screen="reports">
+        <span class="nav-icon">📊</span> Reports
+      </li>
+      <li class="nav-item" data-screen="settings">
+        <span class="nav-icon">⚙️</span> Settings
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <div class="nav-item" id="sidebarNewOrder">
+        <span class="nav-icon">➕</span> New Order
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="screen-dashboard" class="screen active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle" id="dashDateLabel">Loading...</div>
+        </div>
+        <div class="flex gap-8" style="align-items:center">
+          <div class="period-filter">
+            <button class="period-btn active" data-period="week">Week</button>
+            <button class="period-btn" data-period="month">Month</button>
+            <button class="period-btn" data-period="year">Year</button>
+            <button class="period-btn" data-period="custom">Custom</button>
+          </div>
+        </div>
+      </div>
+      <div class="page-body">
+        <div id="customDateRow" class="hidden flex gap-8 mb-16" style="align-items:center">
+          <label class="form-label" style="white-space:nowrap">From:</label>
+          <input type="date" id="customFrom" class="form-input" style="width:160px">
+          <label class="form-label" style="white-space:nowrap">To:</label>
+          <input type="date" id="customTo" class="form-input" style="width:160px">
+          <button class="btn btn-primary btn-sm" onclick="App.dashboard.applyCustomPeriod()">Apply</button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid" id="summaryCards">
+          <div class="summary-card accent">
+            <div class="sc-icon">💰</div>
+            <div class="sc-label">Total Income</div>
+            <div class="sc-value rupee" id="sc-income">₹0</div>
+            <div class="sc-sub">Delivered orders</div>
+          </div>
+          <div class="summary-card">
+            <div class="sc-icon">📉</div>
+            <div class="sc-label">Total Expenses</div>
+            <div class="sc-value rupee" id="sc-expenses">₹0</div>
+            <div class="sc-sub">All costs</div>
+          </div>
+          <div class="summary-card">
+            <div class="sc-icon">📈</div>
+            <div class="sc-label">Net Profit</div>
+            <div class="sc-value rupee" id="sc-profit">₹0</div>
+            <div class="sc-sub">Income − Expenses</div>
+          </div>
+          <div class="summary-card">
+            <div class="sc-icon">⏳</div>
+            <div class="sc-label">Pending Balance</div>
+            <div class="sc-value rupee" id="sc-pending">₹0</div>
+            <div class="sc-sub">Outstanding payments</div>
+          </div>
+          <div class="summary-card">
+            <div class="sc-icon">📦</div>
+            <div class="sc-label">Active Orders</div>
+            <div class="sc-value" id="sc-active">0</div>
+            <div class="sc-sub">Pending + In Progress + Ready</div>
+          </div>
+          <div class="summary-card">
+            <div class="sc-icon">🚨</div>
+            <div class="sc-label">Overdue Orders</div>
+            <div class="sc-value text-danger" id="sc-overdue">0</div>
+            <div class="sc-sub">Delivery date passed</div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">Income vs Expenses</div>
+            <canvas id="chartIncomeExpense"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Revenue by Service</div>
+            <canvas id="chartServicePie"></canvas>
+          </div>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">Profit Trend</div>
+            <canvas id="chartProfitTrend"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Order Volume</div>
+            <canvas id="chartOrderVolume"></canvas>
+          </div>
+        </div>
+
+        <!-- Pending Balances Panel -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⏳ Pending Balances</div>
+            <button class="btn btn-secondary btn-sm" onclick="App.nav.go('orders')">View All</button>
+          </div>
+          <div id="pendingBalancesList">
+            <div class="empty-state" style="padding:20px">
+              <div class="empty-icon">✅</div>
+              <div class="empty-title">All clear!</div>
+              <div class="empty-msg">No pending balances</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overdue Panel -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <div class="card-title">🚨 Overdue Orders</div>
+          </div>
+          <div id="overdueList">
+            <div class="empty-state" style="padding:20px">
+              <div class="empty-icon">✅</div>
+              <div class="empty-title">No overdue orders</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Low Stock Panel -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <div class="card-title">📦 Low Stock Alerts</div>
+            <button class="btn btn-secondary btn-sm" onclick="App.nav.go('inventory')">View Inventory</button>
+          </div>
+          <div id="lowStockList">
+            <div class="empty-state" style="padding:20px">
+              <div class="empty-icon">✅</div>
+              <div class="empty-title">Stock levels healthy</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ORDERS ===== -->
+    <div id="screen-orders" class="screen">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Orders</div>
+          <div class="page-subtitle" id="ordersCount">0 orders</div>
+        </div>
+        <button class="btn btn-primary" onclick="App.orders.openNew()">➕ New Order</button>
+      </div>
+      <div class="page-body">
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="orderSearch" placeholder="Search customer, phone, description..." oninput="App.orders.search()">
+          </div>
+          <select class="filter-select" id="filterStatus" onchange="App.orders.search()">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="ready">Ready</option>
+            <option value="delivered">Delivered</option>
+          </select>
+          <select class="filter-select" id="filterService" onchange="App.orders.search()">
+            <option value="">All Services</option>
+          </select>
+          <select class="filter-select" id="filterPayment" onchange="App.orders.search()">
+            <option value="">All Payments</option>
+            <option value="paid">Fully Paid</option>
+            <option value="pending">Pending Balance</option>
+          </select>
+        </div>
+        <div class="orders-grid" id="ordersList"></div>
+      </div>
+    </div>
+
+    <!-- ===== PRODUCTION (KANBAN) ===== -->
+    <div id="screen-production" class="screen">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Production Workflow</div>
+          <div class="page-subtitle">Visual order tracking</div>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="kanban-container" id="kanbanBoard">
+          <!-- Columns will be rendered here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== EXPENSES ===== -->
+    <div id="screen-expenses" class="screen">
+      <div class="page-header">
+        <div>
+          <div class="page-title">General Expenses</div>
+          <div class="page-subtitle">Monthly overhead costs</div>
+        </div>
+        <div class="flex gap-8">
+          <button class="btn btn-secondary" onclick="App.expenses.exportPDF()">⬇️ PDF</button>
+          <button class="btn btn-secondary" onclick="App.expenses.exportCSV()">📊 CSV</button>
+          <button class="btn btn-primary" onclick="App.expenses.openAdd()">➕ Add Expense</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="flex gap-8 mb-16" style="align-items:center">
+          <label class="form-label">Month:</label>
+          <input type="month" id="expenseMonthFilter" class="form-input" style="width:180px" onchange="App.expenses.load()">
+        </div>
+        <div class="card mb-16">
+          <div class="card-header">
+            <div class="card-title">Monthly Summary</div>
+          </div>
+          <div class="summary-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom:0">
+            <div class="summary-card" style="padding:14px">
+              <div class="sc-label">Total Expenses</div>
+              <div class="sc-value rupee" id="genExpTotal">₹0</div>
+            </div>
+            <div class="summary-card" style="padding:14px">
+              <div class="sc-label">Order Expenses</div>
+              <div class="sc-value rupee" id="genExpOrders">₹0</div>
+            </div>
+            <div class="summary-card" style="padding:14px">
+              <div class="sc-label">Overhead Costs</div>
+              <div class="sc-value rupee" id="genExpOverhead">₹0</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Overhead Expenses</div>
+          </div>
+          <div id="generalExpensesList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== REPORTS ===== -->
+    <div id="screen-reports" class="screen">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Reports</div>
+          <div class="page-subtitle">Financial summaries &amp; analytics</div>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="report-header-controls">
+          <select class="filter-select" id="reportType" onchange="App.reports.load()">
+            <option value="daily">Daily Summary</option>
+            <option value="monthly" selected>Monthly Report</option>
+            <option value="yearly">Yearly Report</option>
+            <option value="outstanding">Outstanding Balances</option>
+            <option value="service">Service Performance</option>
+          </select>
+          <input type="date" id="reportDate" class="form-input" style="width:170px" onchange="App.reports.load()">
+          <input type="month" id="reportMonth" class="form-input" style="width:170px" onchange="App.reports.load()">
+          <input type="number" id="reportYear" class="form-input" style="width:110px" min="2020" max="2099" onchange="App.reports.load()">
+          <button class="btn btn-primary" onclick="App.reports.exportPDF()">⬇️ PDF</button>
+          <button class="btn btn-secondary" onclick="App.reports.exportCSV()">📊 CSV</button>
+          <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
+        </div>
+        <div id="reportContent"></div>
+      </div>
+    </div>
+
+    <!-- ===== INVENTORY ===== -->
+    <div id="screen-inventory" class="screen">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Material Inventory</div>
+          <div class="page-subtitle">Track stock levels &amp; material costs</div>
+        </div>
+        <button class="btn btn-primary" onclick="App.inventory.openAdd()">➕ Add Material</button>
+      </div>
+      <div class="page-body">
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="inventorySearch" placeholder="Search material name..." oninput="App.inventory.render()">
+          </div>
+        </div>
+        <div id="inventoryList" class="orders-grid"></div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div id="screen-settings" class="screen">
+      <div class="page-header">
+        <div class="page-title">Settings</div>
+      </div>
+      <div class="page-body">
+
+        <div class="settings-section">
+          <div class="settings-section-title">🛠️ Service Types</div>
+          <div class="service-list" id="serviceTypeList"></div>
+          <div class="add-service-row">
+            <input type="text" id="newServiceInput" class="form-input" placeholder="Add new service type..." style="flex:1">
+            <button class="btn btn-primary" onclick="App.settings.addService()">Add</button>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">💾 Data Management</div>
+          <div class="flex gap-8" style="flex-wrap:wrap">
+            <button class="btn btn-secondary" onclick="App.settings.exportData()">⬇️ Export Backup (JSON)</button>
+            <button class="btn btn-secondary" onclick="App.settings.exportCSV()">⬇️ Export CSV</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">⬆️ Import Backup</button>
+            <input type="file" id="importFile" accept=".json" class="hidden" onchange="App.settings.importData(event)">
+            <button class="btn btn-danger" onclick="App.settings.clearData()">🗑️ Clear All Data</button>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">📱 PWA Install</div>
+          <p class="text-muted mb-8">Install RamArts on your device for offline access and a native app experience.</p>
+          <button class="btn btn-primary" id="installBtn" style="display:none">📲 Install App</button>
+          <p class="text-muted" id="installStatus">App is running in browser mode.</p>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">ℹ️ App Info</div>
+          <p class="text-muted">RamArts Business Performance Tracking PWA — v1.0</p>
+          <p class="text-muted">Built for print, signage &amp; branding shops. All data stored locally on your device.</p>
+          <p class="text-muted">Currency: ₹ Indian Rupee &nbsp;|&nbsp; Date format: DD/MM/YYYY</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- BOTTOM NAV (Mobile) -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-item active" data-screen="dashboard">
+    <span class="nav-icon">🏠</span>
+    <span>Home</span>
+  </div>
+  <div class="bottom-nav-item" data-screen="orders">
+    <span class="nav-icon">📋</span>
+    <span>Orders</span>
+  </div>
+  <div class="bottom-nav-item" data-screen="production">
+    <span class="nav-icon">🏭</span>
+    <span>Workflow</span>
+  </div>
+  <div class="fab-btn" onclick="App.orders.openNew()">➕</div>
+  <div class="bottom-nav-item" data-screen="expenses">
+    <span class="nav-icon">💸</span>
+    <span>Expenses</span>
+  </div>
+  <div class="bottom-nav-item" data-screen="inventory">
+    <span class="nav-icon">📦</span>
+    <span>Stock</span>
+  </div>
+  <div class="bottom-nav-item" data-screen="settings">
+    <span class="nav-icon">⚙️</span>
+    <span>Settings</span>
+  </div>
+</nav>
+
+<!-- ===== ORDER MODAL ===== -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="orderModalTitle">New Order</div>
+      <button class="modal-close" onclick="App.orders.closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="orderId">
+
+      <!-- Customer Info Section -->
+      <div class="modal-section-title">👤 Customer Information</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Customer Name <span class="req">*</span></label>
+          <input type="text" id="fCustomerName" class="form-input" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" id="fCustomerPhone" class="form-input" placeholder="+91 9xxxxxxxxx" oninput="App.orders.updateModalWhatsAppBtn()">
+        </div>
+      </div>
+
+      <!-- Order Details Section -->
+      <div class="modal-section-title">📋 Order Details</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Service Type <span class="req">*</span></label>
+          <input type="text" id="fServiceType" class="form-input" list="fServiceTypeDatalist" placeholder="Type to search..." autocomplete="off">
+          <datalist id="fServiceTypeDatalist"></datalist>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Order Status</label>
+          <select id="fStatus" class="form-select" onchange="App.orders.updateModalWhatsAppBtn()">
+            <option value="pending">🟡 Pending</option>
+            <option value="in_progress">🔵 In Progress</option>
+            <option value="ready">🟢 Ready</option>
+            <option value="delivered">⚫ Delivered</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Order Date <span class="req">*</span></label>
+          <input type="date" id="fOrderDate" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Delivery Date <span class="req">*</span></label>
+          <input type="date" id="fDeliveryDate" class="form-input">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Work Description</label>
+          <textarea id="fDescription" class="form-textarea" placeholder="Size, quantity, material, design details..."></textarea>
+        </div>
+      </div>
+
+      <!-- Financial Section -->
+      <div class="modal-section-title">💰 Payment & Calculator</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Total Price (₹) <span class="req">*</span></label>
+          <input type="number" id="fTotalPrice" class="form-input" placeholder="0" min="0" oninput="App.orders.calcBalance()">
+          
+          <!-- Quick Pricing Calculator -->
+          <div class="pricing-calc-box">
+            <div style="font-size:11px; font-weight:600; color:var(--accent); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px">
+              <div style="display:flex; align-items:center; gap:4px">
+                <span>📏 Unit:</span>
+                <select id="calcUnit" class="form-select" style="padding:2px 20px 2px 6px; font-size:10px; height:auto; width:auto; background-position: right 6px center" onchange="App.orders.runPricingCalc()">
+                  <option value="ft">Feet (sq.ft)</option>
+                  <option value="in">Inches (sq.in)</option>
+                  <option value="mm">MM</option>
+                  <option value="cm">CM</option>
+                  <option value="mtr">Meters</option>
+                </select>
+              </div>
+              <label style="display:flex; align-items:center; gap:4px; cursor:pointer">
+                <input type="checkbox" id="calcAutoApply" checked style="width:12px; height:12px"> Auto
+              </label>
+            </div>
+            <div class="calc-row">
+              <input type="number" id="calcWidth" class="form-input" style="padding:6px 8px; font-size:12px" placeholder="W" oninput="App.orders.runPricingCalc()">
+              <input type="number" id="calcHeight" class="form-input" style="padding:6px 8px; font-size:12px" placeholder="H" oninput="App.orders.runPricingCalc()">
+              <input type="number" id="calcRate" class="form-input" style="padding:6px 8px; font-size:12px" placeholder="Rate" oninput="App.orders.runPricingCalc()">
+            </div>
+            <div class="calc-info">
+              <span>Area: <span id="calcArea">0</span> <span id="calcUnitLabel">sqft</span></span>
+              <span class="calc-result">₹<span id="calcResult">0</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Advance Paid (₹)</label>
+          <input type="number" id="fAdvancePaid" class="form-input" placeholder="0" min="0" oninput="App.orders.calcBalance()" style="margin-bottom:16px">
+          
+          <label class="form-label">Balance Due (₹)</label>
+          <div style="display:flex; gap:8px;">
+            <input type="number" id="fBalanceDue" class="form-input" readonly placeholder="0" style="flex:1">
+            <button class="btn btn-success btn-sm" id="markPaidBtn" onclick="App.orders.markAsPaid()" title="Mark as fully paid">Paid</button>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Notes / Remarks</label>
+          <textarea id="fNotes" class="form-textarea" style="min-height:60px" placeholder="Special instructions..."></textarea>
+        </div>
+      </div>
+
+      <!-- Order Expenses -->
+      <div class="modal-section-title">🛠️ Job Expenses</div>
+      <div id="orderExpensesList"></div>
+      <button class="expense-add-btn" onclick="App.orders.addExpenseRow()">➕ Add Expense Item</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="App.orders.closeModal()">Cancel</button>
+      <button class="btn btn-whatsapp" id="modalWhatsAppBtn" style="display:none" onclick="App.orders.sendWhatsApp(document.getElementById('orderId').value)">📲 Send Ready Alert</button>
+      <button class="btn btn-danger btn-sm" id="duplicateBtn" onclick="App.orders.duplicate()" style="display:none">⧉ Duplicate</button>
+      <button class="btn btn-danger btn-sm" id="deleteOrderBtn" onclick="App.orders.deleteOrder()" style="display:none">🗑️ Delete</button>
+      <button class="btn btn-primary" onclick="App.orders.save()">💾 Save Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXPENSE MODAL ===== -->
+<div class="modal-overlay" id="expenseModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title" id="expenseModalTitle">Add Expense</div>
+      <button class="modal-close" onclick="App.expenses.closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="expenseId">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Category <span class="req">*</span></label>
+          <select id="fExpCat" class="form-select">
+            <option value="electricity">Electricity Bill</option>
+            <option value="rent">Shop Rent</option>
+            <option value="salary">Staff Salary</option>
+            <option value="internet">Internet / Phone Bill</option>
+            <option value="maintenance">Equipment Maintenance</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (₹) <span class="req">*</span></label>
+          <input type="number" id="fExpAmount" class="form-input" placeholder="0" min="0">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Description</label>
+          <input type="text" id="fExpLabel" class="form-input" placeholder="e.g. MSEB bill April 2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date <span class="req">*</span></label>
+          <input type="date" id="fExpDate" class="form-input">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="App.expenses.closeModal()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="deleteExpenseBtn" onclick="App.expenses.deleteExpense()" style="display:none">🗑️ Delete</button>
+      <button class="btn btn-primary" onclick="App.expenses.save()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== INVENTORY MODAL ===== -->
+<div class="modal-overlay" id="inventoryModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title" id="inventoryModalTitle">Add Material</div>
+      <button class="modal-close" onclick="App.inventory.closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="invId">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Material Name <span class="req">*</span></label>
+          <input type="text" id="fInvName" class="form-input" placeholder="e.g. Flex Roll 10ft Star">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Stock <span class="req">*</span></label>
+          <input type="number" id="fInvStock" class="form-input" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit <span class="req">*</span></label>
+          <select id="fInvUnit" class="form-select">
+            <option value="sqft">Sq. Ft.</option>
+            <option value="sqin">Sq. In.</option>
+            <option value="mtr">Meters</option>
+            <option value="roll">Rolls</option>
+            <option value="sheet">Sheets</option>
+            <option value="unit">Units / Pcs</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Low Stock Alert <span class="req">*</span></label>
+          <input type="number" id="fInvMin" class="form-input" placeholder="Alert at..." min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cost Price (₹/unit)</label>
+          <input type="number" id="fInvCost" class="form-input" placeholder="0" min="0">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="App.inventory.closeModal()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="deleteInvBtn" onclick="App.inventory.deleteItem()" style="display:none">🗑️ Delete</button>
+      <button class="btn btn-primary" onclick="App.inventory.save()">💾 Save Material</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONFIRM DIALOG ===== -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" onclick="App.confirm.cancel()">Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn" onclick="App.confirm.ok()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// DATABASE LAYER (IndexedDB)
+// ============================================================
+const DB = (() => {
+  let db = null;
+  const DB_NAME = 'ramarts_db';
+  const DB_VERSION = 2; // Incremented to trigger onupgradeneeded for inventory store
+
+  async function open() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains('orders')) {
+          const os = d.createObjectStore('orders', { keyPath: 'id' });
+          os.createIndex('status', 'status');
+          os.createIndex('orderDate', 'orderDate');
+          os.createIndex('customerName', 'customerName');
+        }
+        if (!d.objectStoreNames.contains('expenses')) {
+          const es = d.createObjectStore('expenses', { keyPath: 'id' });
+          es.createIndex('orderId', 'orderId');
+          es.createIndex('date', 'date');
+        }
+        if (!d.objectStoreNames.contains('inventory')) {
+          const is = d.createObjectStore('inventory', { keyPath: 'id' });
+          is.createIndex('name', 'name');
+        }
+        if (!d.objectStoreNames.contains('settings')) {
+          d.createObjectStore('settings', { keyPath: 'key' });
+        }
+      };
+      req.onsuccess = e => { db = e.target.result; resolve(db); };
+      req.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function tx(store, mode = 'readonly') {
+    return db.transaction(store, mode).objectStore(store);
+  }
+
+  async function getAll(store) {
+    return new Promise((res, rej) => {
+      const req = tx(store).getAll();
+      req.onsuccess = e => res(e.target.result);
+      req.onerror = e => rej(e.target.error);
+    });
+  }
+
+  async function get(store, key) {
+    return new Promise((res, rej) => {
+      const req = tx(store).get(key);
+      req.onsuccess = e => res(e.target.result);
+      req.onerror = e => rej(e.target.error);
+    });
+  }
+
+  async function put(store, value) {
+    return new Promise((res, rej) => {
+      const req = tx(store, 'readwrite').put(value);
+      req.onsuccess = e => res(e.target.result);
+      req.onerror = e => rej(e.target.error);
+    });
+  }
+
+  async function del(store, key) {
+    return new Promise((res, rej) => {
+      const req = tx(store, 'readwrite').delete(key);
+      req.onsuccess = () => res();
+      req.onerror = e => rej(e.target.error);
+    });
+  }
+
+  async function getSetting(key, def = null) {
+    const r = await get('settings', key);
+    return r ? r.value : def;
+  }
+
+  async function setSetting(key, value) {
+    await put('settings', { key, value });
+  }
+
+  return { open, getAll, get, put, del, getSetting, setSetting };
+})();
+
+// ============================================================
+// UTILITIES
+// ============================================================
+const Util = {
+  uuid() {
+    return crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  },
+
+  fmtCurrency(n) {
+    n = Number(n) || 0;
+    return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  },
+
+  fmtDate(dateStr) {
+    if (!dateStr) return '—';
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+  },
+
+  cleanPhone(phone) {
+    if (!phone) return '';
+    let cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 10) cleaned = '91' + cleaned;
+    return cleaned;
+  },
+
+  today() {
+    return new Date().toISOString().split('T')[0];
+  },
+
+  thisMonth() {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;
+  },
+
+  thisYear() {
+    return new Date().getFullYear();
+  },
+
+  daysBetween(d1, d2) {
+    return Math.floor((new Date(d2) - new Date(d1)) / 86400000);
+  },
+
+  isOverdue(order) {
+    return order.status !== 'delivered' && order.deliveryDate && order.deliveryDate < Util.today();
+  },
+
+  generateOrderNumber(allOrders) {
+    const year = new Date().getFullYear();
+    const nums = allOrders
+      .filter(o => o.orderNumber && o.orderNumber.startsWith(`ORD-${year}-`))
+      .map(o => parseInt(o.orderNumber.split('-')[2]) || 0);
+    const next = nums.length ? Math.max(...nums) + 1 : 1;
+    return `ORD-${year}-${String(next).padStart(4,'0')}`;
+  },
+
+  getWeekRange() {
+    const now = new Date();
+    const day = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return [monday.toISOString().split('T')[0], sunday.toISOString().split('T')[0]];
+  },
+
+  getMonthRange(monthStr) {
+    const [y, m] = (monthStr || Util.thisMonth()).split('-').map(Number);
+    const from = `${y}-${String(m).padStart(2,'0')}-01`;
+    const lastDay = new Date(y, m, 0).getDate();
+    const to = `${y}-${String(m).padStart(2,'0')}-${lastDay}`;
+    return [from, to];
+  },
+
+  getYearRange(year) {
+    year = year || Util.thisYear();
+    return [`${year}-01-01`, `${year}-12-31`];
+  },
+
+  inRange(dateStr, from, to) {
+    if (!dateStr) return false;
+    return dateStr >= from && dateStr <= to;
+  }
+};
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type = 'default') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icons = { success: '✅', error: '❌', warning: '⚠️', default: 'ℹ️' };
+  el.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// ============================================================
+// DEFAULT SERVICE TYPES
+// ============================================================
+const DEFAULT_SERVICES = [
+  'Banner & Flex Printing',
+  'Vinyl Printing',
+  'One Vision / Perforated Printing',
+  'Acrylic Laser Cutting & Engraving',
+  'LED Sign Board Manufacturing',
+  'Backlit Shop Board',
+  'UV Print Backlit Photo Frame',
+  'Wedding & Event Printing',
+  'Car Colour Wrapping (Full / Partial)',
+  'Car Transparent Protective Wrapping',
+  'Car Sun-Protection / Tinting Film',
+  'Scratch-Resistant Protective Film',
+  'Personalized Photo Engraved Frame',
+  'Vinyl Sticker Printing',
+  'Radium / Reflective Cutting Sticker',
+  'Classic Photo Frame',
+  'Other'
+];
+
+// ============================================================
+// MAIN APP
+// ============================================================
+const App = {
+  state: {
+    orders: [],
+    expenses: [],
+    inventory: [],
+    serviceTypes: [],
+    currentPeriod: 'month',
+    customFrom: null,
+    customTo: null,
+    charts: {},
+    currentScreen: 'dashboard'
+  },
+
+  // ── INIT ──────────────────────────────────────────────────
+    async init() {
+    try {
+      await DB.open();
+      this.state.orders = await DB.getAll('orders') || [];
+      this.state.expenses = await DB.getAll('expenses') || [];
+      this.state.inventory = await DB.getAll('inventory') || [];
+      this.state.serviceTypes = await DB.getSetting('serviceTypes', DEFAULT_SERVICES) || DEFAULT_SERVICES;
+
+      // Restore state from localStorage
+      this.state.currentPeriod = localStorage.getItem('ramarts_dashboard_period') || 'month';
+      this.state.customFrom = localStorage.getItem('ramarts_custom_from');
+      this.state.customTo = localStorage.getItem('ramarts_custom_to');
+
+      this.nav.setup();
+      this.dashboard.init();
+      this.orders.init();
+      this.production.init();
+      this.expenses.init();
+      this.reports.init();
+      this.settings.init();
+      this.pwa.init();
+
+      // Set initial screen from hash or localStorage
+      const hash = window.location.hash.replace('#', '');
+      const lastScreen = hash || localStorage.getItem('ramarts_last_screen') || 'dashboard';
+      this.nav.go(lastScreen);
+
+      // Listen for hash changes
+      window.addEventListener('hashchange', () => {
+        const h = window.location.hash.replace('#', '');
+        if (h && h !== App.state.currentScreen) App.nav.go(h);
+      });
+    } catch (err) {
+      console.error('Critical initialization error:', err);
+      toast('Error loading app data. Please refresh.', 'error');
+    }
+  },
+
+  // ── NAVIGATION ────────────────────────────────────────────
+  nav: {
+    setup() {
+      // Sidebar
+      document.querySelectorAll('.nav-item[data-screen]').forEach(el => {
+        el.addEventListener('click', () => App.nav.go(el.dataset.screen));
+      });
+      // Bottom nav
+      document.querySelectorAll('.bottom-nav-item[data-screen]').forEach(el => {
+        el.addEventListener('click', () => App.nav.go(el.dataset.screen));
+      });
+      // New order sidebar
+      document.getElementById('sidebarNewOrder').addEventListener('click', () => App.orders.openNew());
+    },
+
+    go(screen) {
+      // Hide all screens
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const targetScreen = document.getElementById(`screen-${screen}`);
+      if (targetScreen) {
+        targetScreen.classList.add('active');
+      } else {
+        // Fallback to dashboard if screen ID is missing
+        const dash = document.getElementById('screen-dashboard');
+        if (dash) {
+          dash.classList.add('active');
+          screen = 'dashboard';
+        }
+      }
+
+      // Update nav items
+      document.querySelectorAll('.nav-item[data-screen], .bottom-nav-item[data-screen]').forEach(el => {
+        el.classList.toggle('active', el.dataset.screen === screen);
+      });
+
+      App.state.currentScreen = screen;
+      localStorage.setItem('ramarts_last_screen', screen);
+      if (window.location.hash !== '#' + screen) {
+        window.history.replaceState(null, null, '#' + screen);
+      }
+
+      // Refresh screen data with safety checks
+      try {
+        if (screen === 'dashboard') App.dashboard.refresh();
+        else if (screen === 'orders') App.orders.refresh();
+        else if (screen === 'production') App.production.refresh();
+        else if (screen === 'expenses') App.expenses.load();
+        else if (screen === 'inventory') App.inventory.load();
+        else if (screen === 'reports') App.reports.load();
+        else if (screen === 'settings') App.settings.render();
+      } catch (err) {
+        console.error(`Error refreshing screen ${screen}:`, err);
+      }
+    }
+  },
+
+  // ── CONFIRM DIALOG ────────────────────────────────────────
+  confirm: {
+    _cb: null,
+    show(title, msg, icon = '⚠️', okLabel = 'Confirm') {
+      return new Promise(resolve => {
+        this._cb = resolve;
+        document.getElementById('confirmIcon').textContent = icon;
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMsg').textContent = msg;
+        document.getElementById('confirmOkBtn').textContent = okLabel;
+        document.getElementById('confirmOverlay').classList.add('open');
+      });
+    },
+    ok() {
+      document.getElementById('confirmOverlay').classList.remove('open');
+      if (this._cb) this._cb(true);
+    },
+    cancel() {
+      document.getElementById('confirmOverlay').classList.remove('open');
+      if (this._cb) this._cb(false);
+    }
+  },
+
+  // ── DASHBOARD ─────────────────────────────────────────────
+  dashboard: {
+    init() {
+      // Restore active period button
+      document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.period === App.state.currentPeriod);
+      });
+
+      // Restore custom date inputs if active
+      const customRow = document.getElementById('customDateRow');
+      customRow.classList.toggle('hidden', App.state.currentPeriod !== 'custom');
+      if (App.state.customFrom) document.getElementById('customFrom').value = App.state.customFrom;
+      if (App.state.customTo) document.getElementById('customTo').value = App.state.customTo;
+
+      // Period buttons
+      document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          App.state.currentPeriod = btn.dataset.period;
+          localStorage.setItem('ramarts_dashboard_period', btn.dataset.period);
+          
+          const customRow = document.getElementById('customDateRow');
+          customRow.classList.toggle('hidden', btn.dataset.period !== 'custom');
+          if (btn.dataset.period !== 'custom') App.dashboard.refresh();
+        });
+      });
+
+      // Set date label
+      this.refresh();
+    },
+
+    getRange() {
+      const p = App.state.currentPeriod;
+      if (p === 'week') return Util.getWeekRange();
+      if (p === 'month') return Util.getMonthRange(Util.thisMonth());
+      if (p === 'year') return Util.getYearRange(Util.thisYear());
+      if (p === 'custom') return [App.state.customFrom || Util.today(), App.state.customTo || Util.today()];
+      return Util.getMonthRange(Util.thisMonth());
+    },
+
+    applyCustomPeriod() {
+      const from = document.getElementById('customFrom').value;
+      const to = document.getElementById('customTo').value;
+      if (!from || !to) { toast('Select both dates', 'warning'); return; }
+      App.state.customFrom = from;
+      App.state.customTo = to;
+      localStorage.setItem('ramarts_custom_from', from);
+      localStorage.setItem('ramarts_custom_to', to);
+      this.refresh();
+    },
+
+    refresh() {
+      const [from, to] = this.getRange();
+      const orders = App.state.orders;
+      const expenses = App.state.expenses;
+
+      // Date label
+      const now = new Date();
+      document.getElementById('dashDateLabel').textContent = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+      // Filter orders in range (by orderDate)
+      const rangeOrders = orders.filter(o => Util.inRange(o.orderDate, from, to));
+
+      // Income = sum of delivered totalPrice
+      const income = rangeOrders.filter(o => o.status === 'delivered').reduce((s, o) => s + (Number(o.totalPrice) || 0), 0);
+
+      // Order expenses in range
+      const orderExpenses = expenses.filter(e => e.orderId && Util.inRange(e.date, from, to)).reduce((s, e) => s + (Number(e.amount) || 0), 0);
+
+      // General expenses in range
+      const genExpenses = expenses.filter(e => !e.orderId && Util.inRange(e.date, from, to)).reduce((s, e) => s + (Number(e.amount) || 0), 0);
+
+      const totalExpenses = orderExpenses + genExpenses;
+      const profit = income - totalExpenses;
+
+      // Pending balance = all non-delivered orders
+      const pendingBalance = orders.filter(o => o.status !== 'delivered').reduce((s, o) => s + (Number(o.balanceDue) || 0), 0);
+
+      // Active & overdue
+      const active = orders.filter(o => ['pending','in_progress','ready'].includes(o.status)).length;
+      const overdue = orders.filter(Util.isOverdue).length;
+
+      // Update cards
+      document.getElementById('sc-income').textContent = Util.fmtCurrency(income);
+      document.getElementById('sc-expenses').textContent = Util.fmtCurrency(totalExpenses);
+      const profitEl = document.getElementById('sc-profit');
+      profitEl.textContent = Util.fmtCurrency(profit);
+      profitEl.className = 'sc-value rupee ' + (profit >= 0 ? 'text-success' : 'text-danger');
+      document.getElementById('sc-pending').textContent = Util.fmtCurrency(pendingBalance);
+      document.getElementById('sc-active').textContent = active;
+      document.getElementById('sc-overdue').textContent = overdue;
+
+      // Pending balances panel
+      this.renderPendingList();
+
+      // Overdue panel
+      this.renderOverdueList();
+
+      // Low stock panel
+      this.renderLowStockList();
+
+      // Charts
+      this.renderCharts(from, to);
+    },
+
+    renderLowStockList() {
+      const el = document.getElementById('lowStockList');
+      if (!el) return;
+      const lowStock = App.state.inventory.filter(i => Number(i.currentStock) <= Number(i.minStock));
+
+      if (!lowStock.length) {
+        el.innerHTML = `<div class="empty-state" style="padding:20px"><div class="empty-icon">✅</div><div class="empty-title">Stock levels healthy</div></div>`;
+        return;
+      }
+      el.innerHTML = lowStock.map(i => `
+        <div class="balance-row" onclick="App.nav.go('inventory')">
+          <div>
+            <div style="font-weight:600;font-size:14px">${i.name}</div>
+            <div class="text-muted">Min: ${i.minStock} ${i.unit}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="text-danger" style="font-weight:700;font-size:16px">${i.currentStock} ${i.unit}</div>
+            <div style="font-size:10px;color:var(--text-muted)">Remaining</div>
+          </div>
+        </div>
+      `).join('');
+    },
+
+    renderPendingList() {
+      const el = document.getElementById('pendingBalancesList');
+      const pending = App.state.orders
+        .filter(o => o.status !== 'delivered' && (Number(o.balanceDue) || 0) > 0)
+        .sort((a, b) => (a.deliveryDate || '').localeCompare(b.deliveryDate || ''));
+
+      if (!pending.length) {
+        el.innerHTML = `<div class="empty-state" style="padding:20px"><div class="empty-icon">✅</div><div class="empty-title">All clear!</div><div class="empty-msg">No pending balances</div></div>`;
+        return;
+      }
+      el.innerHTML = pending.slice(0, 10).map(o => `
+        <div class="balance-row" onclick="App.orders.openEdit('${o.id}')">
+          <div>
+            <div style="font-weight:600;font-size:14px">${o.customerName}</div>
+            <div class="text-muted">${o.serviceType} &nbsp;|&nbsp; Due: ${Util.fmtDate(o.deliveryDate)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span>
+            <span class="balance-amount">${Util.fmtCurrency(o.balanceDue)}</span>
+          </div>
+        </div>
+      `).join('');
+    },
+
+    renderOverdueList() {
+      const el = document.getElementById('overdueList');
+      const overdue = App.state.orders.filter(Util.isOverdue)
+        .sort((a, b) => a.deliveryDate.localeCompare(b.deliveryDate));
+      if (!overdue.length) {
+        el.innerHTML = `<div class="empty-state" style="padding:20px"><div class="empty-icon">✅</div><div class="empty-title">No overdue orders</div></div>`;
+        return;
+      }
+      el.innerHTML = overdue.slice(0, 8).map(o => `
+        <div class="balance-row" onclick="App.orders.openEdit('${o.id}')">
+          <div>
+            <div style="font-weight:600;font-size:14px">${o.customerName}</div>
+            <div class="text-muted">${o.serviceType}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="overdue-badge">🚨 ${Math.abs(Util.daysBetween(Util.today(), o.deliveryDate))}d overdue</span>
+            <span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span>
+          </div>
+        </div>
+      `).join('');
+    },
+
+    renderCharts(from, to) {
+      const orders = App.state.orders;
+      const expenses = App.state.expenses;
+      const period = App.state.currentPeriod;
+
+      const chartOpts = {
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: { duration: 400 },
+        plugins: { legend: { labels: { font: { family: 'DM Sans' }, color: '#5a5a7a', boxWidth: 12 } } },
+        scales: {
+          x: { grid: { color: '#f0eee9' }, ticks: { color: '#9898b0', font: { family: 'DM Sans', size: 11 } } },
+          y: { grid: { color: '#f0eee9' }, ticks: { color: '#9898b0', font: { family: 'DM Sans', size: 11 }, callback: v => '₹' + v.toLocaleString('en-IN') } }
+        }
+      };
+
+      // Build labels for bar chart (weekly = last 7 days / month = weeks / year = months)
+      let labels = [], incomeData = [], expenseData = [], profitData = [], volumeData = [];
+
+      if (period === 'week') {
+        // Show each day of the week
+        const [wFrom] = Util.getWeekRange();
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(wFrom);
+          d.setDate(d.getDate() + i);
+          const ds = d.toISOString().split('T')[0];
+          labels.push(d.toLocaleDateString('en-IN', { weekday: 'short' }));
+          const dayOrders = orders.filter(o => o.orderDate === ds);
+          const dayIncome = dayOrders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.totalPrice || 0), 0);
+          const dayExp = expenses.filter(e => e.date === ds).reduce((s, e) => s + Number(e.amount || 0), 0);
+          incomeData.push(dayIncome); expenseData.push(dayExp); profitData.push(dayIncome - dayExp); volumeData.push(dayOrders.length);
+        }
+      } else if (period === 'year') {
+        const y = Util.thisYear();
+        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        for (let m = 0; m < 12; m++) {
+          labels.push(monthNames[m]);
+          const mFrom = `${y}-${String(m+1).padStart(2,'0')}-01`;
+          const mTo = `${y}-${String(m+1).padStart(2,'0')}-${new Date(y, m+1, 0).getDate()}`;
+          const mOrders = orders.filter(o => Util.inRange(o.orderDate, mFrom, mTo));
+          const mIncome = mOrders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.totalPrice || 0), 0);
+          const mExp = expenses.filter(e => Util.inRange(e.date, mFrom, mTo)).reduce((s, e) => s + Number(e.amount || 0), 0);
+          incomeData.push(mIncome); expenseData.push(mExp); profitData.push(mIncome - mExp); volumeData.push(mOrders.length);
+        }
+      } else {
+        // Month — show weekly
+        const [mFrom, mTo] = Util.getMonthRange(Util.thisMonth());
+        let cur = new Date(mFrom);
+        const end = new Date(mTo);
+        let wk = 1;
+        while (cur <= end) {
+          const wEnd = new Date(cur); wEnd.setDate(cur.getDate() + 6);
+          if (wEnd > end) wEnd.setTime(end.getTime());
+          const wFromS = cur.toISOString().split('T')[0];
+          const wToS = wEnd.toISOString().split('T')[0];
+          labels.push(`Wk${wk}`);
+          const wOrders = orders.filter(o => Util.inRange(o.orderDate, wFromS, wToS));
+          const wInc = wOrders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.totalPrice || 0), 0);
+          const wExp = expenses.filter(e => Util.inRange(e.date, wFromS, wToS)).reduce((s, e) => s + Number(e.amount || 0), 0);
+          incomeData.push(wInc); expenseData.push(wExp); profitData.push(wInc - wExp); volumeData.push(wOrders.length);
+          cur.setDate(cur.getDate() + 7); wk++;
+        }
+      }
+
+      // Chart 1: Income vs Expense Bar
+      if (App.state.charts.ie) {
+        App.state.charts.ie.data.labels = labels;
+        App.state.charts.ie.data.datasets[0].data = incomeData;
+        App.state.charts.ie.data.datasets[1].data = expenseData;
+        App.state.charts.ie.update();
+      } else {
+        const c1 = document.getElementById('chartIncomeExpense').getContext('2d');
+        App.state.charts.ie = new Chart(c1, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { label: 'Income', data: incomeData, backgroundColor: 'rgba(230,126,34,0.8)', borderRadius: 4 },
+              { label: 'Expenses', data: expenseData, backgroundColor: 'rgba(239,68,68,0.6)', borderRadius: 4 }
+            ]
+          },
+          options: { ...chartOpts, plugins: { ...chartOpts.plugins, legend: { ...chartOpts.plugins.legend, display: true } } }
+        });
+      }
+
+      // Chart 2: Service Pie
+      const rangeOrders = orders.filter(o => Util.inRange(o.orderDate, from, to) && o.status === 'delivered');
+      const serviceMap = {};
+      rangeOrders.forEach(o => { serviceMap[o.serviceType] = (serviceMap[o.serviceType] || 0) + Number(o.totalPrice || 0); });
+      const sLabels = Object.keys(serviceMap);
+      const sData = sLabels.map(k => serviceMap[k]);
+      const pieColors = ['#e67e22','#f39c12','#3b82f6','#10b981','#8b5cf6','#ec4899','#14b8a6','#f59e0b','#6366f1','#84cc16','#f97316','#06b6d4'];
+      
+      if (App.state.charts.pie) {
+        App.state.charts.pie.data.labels = sLabels.length ? sLabels : ['No Data'];
+        App.state.charts.pie.data.datasets[0].data = sData.length ? sData : [1];
+        App.state.charts.pie.update();
+      } else {
+        const c2 = document.getElementById('chartServicePie').getContext('2d');
+        App.state.charts.pie = new Chart(c2, {
+          type: 'doughnut',
+          data: {
+            labels: sLabels.length ? sLabels : ['No Data'],
+            datasets: [{ data: sData.length ? sData : [1], backgroundColor: pieColors.slice(0, Math.max(sLabels.length, 1)), borderWidth: 2, borderColor: '#fff' }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: {
+              legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 11 }, color: '#5a5a7a', boxWidth: 10, padding: 8 } },
+              tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${Util.fmtCurrency(ctx.raw)}` } }
+            }
+          }
+        });
+      }
+
+      // Chart 3: Profit Trend Line
+      if (App.state.charts.profit) {
+        App.state.charts.profit.data.labels = labels;
+        App.state.charts.profit.data.datasets[0].data = profitData;
+        App.state.charts.profit.update();
+      } else {
+        const c3 = document.getElementById('chartProfitTrend').getContext('2d');
+        App.state.charts.profit = new Chart(c3, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Net Profit', data: profitData,
+              borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)',
+              fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#10b981'
+            }]
+          },
+          options: { ...chartOpts }
+        });
+      }
+
+      // Chart 4: Order Volume
+      if (App.state.charts.vol) {
+        App.state.charts.vol.data.labels = labels;
+        App.state.charts.vol.data.datasets[0].data = volumeData;
+        App.state.charts.vol.update();
+      } else {
+        const c4 = document.getElementById('chartOrderVolume').getContext('2d');
+        App.state.charts.vol = new Chart(c4, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{ label: 'Orders', data: volumeData, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 4 }]
+          },
+          options: {
+            ...chartOpts,
+            scales: {
+              x: chartOpts.scales.x,
+              y: { ...chartOpts.scales.y, ticks: { ...chartOpts.scales.y.ticks, callback: v => v } }
+            }
+          }
+        });
+      }
+    }
+  },
+
+  // ── ORDERS ────────────────────────────────────────────────
+  orders: {
+    expenseRows: [],
+
+    statusLabel(s) {
+      const labels = { pending: '🟡 Pending', in_progress: '🔵 In Progress', ready: '🟢 Ready', delivered: '⚫ Delivered' };
+      return labels[s] || s || '—';
+    },
+
+    async updateStatus(id, newStatus) {
+      try {
+        const order = App.state.orders.find(o => o.id === id);
+        if (!order) return;
+        
+        // Prevent delivering if balance is due
+        if (newStatus === 'delivered' && Number(order.balanceDue) > 0) {
+          const ok = await App.confirm.show('Balance Due!', `This order has a balance of ${Util.fmtCurrency(order.balanceDue)}. Mark as paid and deliver?`, '💰', 'Mark Paid & Deliver');
+          if (ok) {
+            order.advancePaid = Number(order.totalPrice);
+            order.balanceDue = 0;
+          } else {
+            return; // Cancel status update
+          }
+        }
+
+        order.status = newStatus;
+        await DB.put('orders', order);
+        App.state.orders = await DB.getAll('orders');
+        this.refresh();
+        App.dashboard.refresh();
+        if (App.state.currentScreen === 'production') App.production.refresh();
+        toast(`Status updated to ${this.statusLabel(newStatus)}`, 'success');
+      } catch (err) {
+        console.error('Error updating status:', err);
+        toast('Failed to update status', 'error');
+      }
+    },
+
+    sendWhatsApp(orderId, event) {
+      if (event) event.stopPropagation();
+      
+      let order;
+      if (orderId) {
+        order = App.state.orders.find(o => o.id === orderId);
+      } else {
+        // If no ID, it's a new order in the modal
+        order = {
+          customerName: document.getElementById('fCustomerName').value.trim(),
+          customerPhone: document.getElementById('fCustomerPhone').value.trim(),
+          serviceType: document.getElementById('fServiceType').value,
+          status: document.getElementById('fStatus').value,
+          orderNumber: 'New Order',
+          balanceDue: document.getElementById('fBalanceDue').value
+        };
+      }
+
+      if (!order || !order.customerPhone) {
+        toast('No phone number found for this customer', 'warning');
+        return;
+      }
+
+      const phone = Util.cleanPhone(order.customerPhone);
+      let msg = '';
+
+      if (order.status === 'ready') {
+        msg = `Hi ${order.customerName}, your order *${order.orderNumber}* (${order.serviceType}) is *Ready for Pickup*! 🥳\n\n`;
+        if (Number(order.balanceDue) > 0) {
+          msg += `Balance due: *${Util.fmtCurrency(order.balanceDue)}*.\n\n`;
+        }
+        msg += `Please visit our shop at your convenience. Thank you! - RamArts`;
+      } else if (order.status === 'delivered') {
+        msg = `Hi ${order.customerName}, your order *${order.orderNumber}* has been delivered. Thank you for choosing RamArts! 🙏`;
+      } else {
+        msg = `Hi ${order.customerName}, regarding your order *${order.orderNumber}* (${order.serviceType}) at RamArts...`;
+      }
+
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+    },
+
+    init() {
+      // Populate service filter
+      this.populateServiceFilters();
+      this.refresh();
+    },
+
+    populateServiceFilters() {
+      const services = App.state.serviceTypes;
+      const filterEl = document.getElementById('filterService');
+      if (filterEl) {
+        const cur = filterEl.value;
+        filterEl.innerHTML = '<option value="">All Services</option>';
+        services.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s; opt.textContent = s;
+          filterEl.appendChild(opt);
+        });
+        if (cur) filterEl.value = cur;
+      }
+      const datalist = document.getElementById('fServiceTypeDatalist');
+      if (datalist) {
+        datalist.innerHTML = '';
+        services.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s;
+          datalist.appendChild(opt);
+        });
+      }
+    },
+
+    refresh() {
+      this.populateServiceFilters();
+      this.search();
+    },
+
+    search() {
+      const q = document.getElementById('orderSearch').value.toLowerCase();
+      const status = document.getElementById('filterStatus').value;
+      const service = document.getElementById('filterService').value;
+      const payment = document.getElementById('filterPayment').value;
+
+      let filtered = App.state.orders.filter(o => {
+        if (status && o.status !== status) return false;
+        if (service && o.serviceType !== service) return false;
+        if (payment === 'paid' && (Number(o.balanceDue) || 0) > 0) return false;
+        if (payment === 'pending' && (Number(o.balanceDue) || 0) <= 0) return false;
+        if (q && !o.customerName?.toLowerCase().includes(q) && !o.customerPhone?.includes(q) && !o.description?.toLowerCase().includes(q)) return false;
+        return true;
+      });
+
+      filtered.sort((a, b) => (b.orderDate || '').localeCompare(a.orderDate || ''));
+
+      document.getElementById('ordersCount').textContent = `${filtered.length} order${filtered.length !== 1 ? 's' : ''}`;
+      const el = document.getElementById('ordersList');
+
+      if (!filtered.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No orders found</div><div class="empty-msg">Try adjusting filters or add a new order</div></div>`;
+        return;
+      }
+
+      el.innerHTML = filtered.map(o => {
+        const orderExpTotal = App.state.expenses.filter(e => e.orderId === o.id).reduce((s, e) => s + Number(e.amount || 0), 0);
+        const overdue = Util.isOverdue(o);
+        return `
+          <div class="order-card" onclick="App.orders.openEdit('${o.id}')">
+            <div class="order-card-left">
+              <div class="order-num">${o.orderNumber || ''}</div>
+              <div class="order-customer">${o.customerName}</div>
+              <div class="order-service">${o.serviceType}</div>
+              <div class="order-meta">
+                <span class="badge badge-${o.status}">${this.statusLabel(o.status)}</span>
+                ${overdue ? '<span class="overdue-badge">🚨 Overdue</span>' : ''}
+                ${o.customerPhone ? `<span class="meta-chip">📞 ${o.customerPhone}</span>` : ''}
+                <span class="meta-chip">📅 ${Util.fmtDate(o.deliveryDate)}</span>
+              </div>
+            </div>
+            <div class="order-card-right">
+              <div class="order-amount">${Util.fmtCurrency(o.totalPrice)}</div>
+              ${Number(o.balanceDue) > 0 ? `<div class="order-balance">Balance: ${Util.fmtCurrency(o.balanceDue)}</div>` : '<div style="font-size:12px;color:var(--success)">✅ Paid</div>'}
+              <div class="order-date">Ordered: ${Util.fmtDate(o.orderDate)}</div>
+              ${o.customerPhone ? `<button class="btn btn-whatsapp btn-sm" style="margin-top:8px; width:100%; justify-content:center" onclick="App.orders.sendWhatsApp('${o.id}', event)">📲 WhatsApp</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    },
+
+    openNew() {
+      this.expenseRows = [];
+      document.getElementById('orderModalTitle').textContent = '➕ New Order';
+      document.getElementById('orderId').value = '';
+      document.getElementById('fCustomerName').value = '';
+      document.getElementById('fCustomerPhone').value = '';
+      document.getElementById('fServiceType').value = '';
+      document.getElementById('fStatus').value = 'pending';
+      document.getElementById('fOrderDate').value = Util.today();
+      document.getElementById('fDeliveryDate').value = '';
+      document.getElementById('fTotalPrice').value = '';
+      document.getElementById('fAdvancePaid').value = '';
+      document.getElementById('fBalanceDue').value = '';
+      document.getElementById('fNotes').value = '';
+      document.getElementById('calcUnit').value = 'ft';
+      document.getElementById('calcWidth').value = '';
+      document.getElementById('calcHeight').value = '';
+      document.getElementById('calcRate').value = '';
+      document.getElementById('calcArea').textContent = '0';
+      document.getElementById('calcResult').textContent = '0';
+      document.getElementById('deleteOrderBtn').style.display = 'none';
+      document.getElementById('duplicateBtn').style.display = 'none';
+      document.getElementById('modalWhatsAppBtn').style.display = 'none';
+      this.renderExpenseRows();
+      this.calcBalance(); // Ensure Paid button state is reset
+      document.getElementById('orderModal').classList.add('open');
+    },
+
+    async openEdit(id) {
+      const order = App.state.orders.find(o => o.id === id);
+      if (!order) return;
+      const orderExps = App.state.expenses.filter(e => e.orderId === id);
+      this.expenseRows = orderExps.map(e => ({ ...e }));
+
+      document.getElementById('orderModalTitle').textContent = '✏️ Edit Order';
+      document.getElementById('orderId').value = order.id;
+      document.getElementById('fCustomerName').value = order.customerName || '';
+      document.getElementById('fCustomerPhone').value = order.customerPhone || '';
+      document.getElementById('fServiceType').value = order.serviceType || '';
+      document.getElementById('fStatus').value = order.status || 'pending';
+      document.getElementById('fOrderDate').value = order.orderDate || '';
+      document.getElementById('fDeliveryDate').value = order.deliveryDate || '';
+      document.getElementById('fTotalPrice').value = order.totalPrice || '';
+      document.getElementById('fAdvancePaid').value = order.advancePaid || '';
+      document.getElementById('fBalanceDue').value = order.balanceDue || '';
+      document.getElementById('fDescription').value = order.description || '';
+      document.getElementById('fNotes').value = order.notes || '';
+      document.getElementById('deleteOrderBtn').style.display = 'inline-flex';
+      document.getElementById('duplicateBtn').style.display = 'inline-flex';
+      document.getElementById('modalWhatsAppBtn').style.display = order.customerPhone ? 'inline-flex' : 'none';
+      if (order.status === 'ready') {
+        document.getElementById('modalWhatsAppBtn').textContent = '📲 Send Ready Alert';
+      } else {
+        document.getElementById('modalWhatsAppBtn').textContent = '📲 WhatsApp';
+      }
+      this.renderExpenseRows();
+      this.calcBalance(); // Update Paid button state for existing order
+      document.getElementById('orderModal').classList.add('open');
+    },
+
+    updateModalWhatsAppBtn() {
+      const phone = document.getElementById('fCustomerPhone').value.trim();
+      const status = document.getElementById('fStatus').value;
+      const btn = document.getElementById('modalWhatsAppBtn');
+      
+      btn.style.display = phone ? 'inline-flex' : 'none';
+      if (status === 'ready') {
+        btn.textContent = '📲 Send Ready Alert';
+      } else {
+        btn.textContent = '📲 WhatsApp';
+      }
+    },
+
+    closeModal() {
+      document.getElementById('orderModal').classList.remove('open');
+    },
+
+    calcBalance() {
+      const total = Number(document.getElementById('fTotalPrice').value) || 0;
+      const advance = Number(document.getElementById('fAdvancePaid').value) || 0;
+      const balance = Math.max(0, total - advance);
+      document.getElementById('fBalanceDue').value = balance;
+      
+      // Toggle "Paid" button based on balance
+      const paidBtn = document.getElementById('markPaidBtn');
+      if (paidBtn) {
+        paidBtn.disabled = balance <= 0;
+        paidBtn.style.opacity = balance <= 0 ? '0.5' : '1';
+        paidBtn.style.cursor = balance <= 0 ? 'not-allowed' : 'pointer';
+      }
+    },
+
+    runPricingCalc() {
+      const w = Number(document.getElementById('calcWidth').value) || 0;
+      const h = Number(document.getElementById('calcHeight').value) || 0;
+      const r = Number(document.getElementById('calcRate').value) || 0;
+      const unit = document.getElementById('calcUnit').value;
+      const auto = document.getElementById('calcAutoApply').checked;
+
+      let area = w * h;
+      let areaInSqFt = 0;
+      let unitLabel = 'sqft';
+
+      // Robust unit conversion logic
+      switch (unit) {
+        case 'ft':
+          areaInSqFt = area;
+          unitLabel = 'sq.ft';
+          break;
+        case 'in':
+          areaInSqFt = area / 144; // 1 sqft = 144 sqin
+          unitLabel = 'sq.in';
+          break;
+        case 'mm':
+          areaInSqFt = area / 92903.04; // 1 sqft = 92903.04 sqmm
+          unitLabel = 'sq.mm';
+          break;
+        case 'cm':
+          areaInSqFt = area / 929.0304; // 1 sqft = 929.0304 sqcm
+          unitLabel = 'sq.cm';
+          break;
+        case 'mtr':
+          areaInSqFt = area * 10.7639; // 1 sqm = 10.7639 sqft
+          unitLabel = 'sq.mtr';
+          break;
+      }
+
+      const result = Math.round(areaInSqFt * r);
+
+      document.getElementById('calcArea').textContent = area.toFixed(2);
+      document.getElementById('calcUnitLabel').textContent = unitLabel;
+      document.getElementById('calcResult').textContent = result.toLocaleString('en-IN');
+
+      if (auto && result > 0) {
+        document.getElementById('fTotalPrice').value = result;
+        this.calcBalance();
+      }
+    },
+
+    markAsPaid() {
+      const total = Number(document.getElementById('fTotalPrice').value) || 0;
+      if (total <= 0) {
+        toast('Enter total price first', 'warning');
+        return;
+      }
+      document.getElementById('fAdvancePaid').value = total;
+      document.getElementById('fStatus').value = 'delivered';
+      this.calcBalance();
+      toast('Order marked as fully paid!', 'success');
+    },
+
+    addExpenseRow(data = {}) {
+      this.expenseRows.push({
+        id: data.id || Util.uuid(),
+        category: data.category || 'material',
+        label: data.label || '',
+        amount: data.amount || '',
+        date: data.date || Util.today()
+      });
+      this.renderExpenseRows();
+    },
+
+    renderExpenseRows() {
+      const el = document.getElementById('orderExpensesList');
+      const expCats = { material: 'Material', labour: 'Labour', machine: 'Machine', transport: 'Transport', other: 'Other' };
+      const inventory = App.state.inventory;
+
+      el.innerHTML = this.expenseRows.map((r, i) => `
+        <div class="expense-row">
+          <select class="form-select" style="font-size: 11px; padding: 6px 20px 6px 8px" onchange="App.orders.expenseRows[${i}].category=this.value; App.orders.renderExpenseRows()">
+            ${Object.entries(expCats).map(([v, l]) => `<option value="${v}" ${r.category===v?'selected':''}>${l}</option>`).join('')}
+          </select>
+          
+          <select class="form-select" style="font-size: 11px; padding: 6px 20px 6px 8px" onchange="App.orders.linkExpenseToInventory(${i}, this.value)">
+            <option value="">-- Link Inventory --</option>
+            <option value="custom" ${r.inventoryId==='custom'?'selected':''}>Custom / Manual</option>
+            ${inventory.map(inv => `<option value="${inv.id}" ${r.inventoryId===inv.id?'selected':''}>${inv.name} (${inv.currentStock} ${inv.unit})</option>`).join('')}
+          </select>
+
+          <input type="text" class="form-input" style="padding: 6px 8px; font-size: 12px" placeholder="Description" value="${r.label || ''}" oninput="App.orders.expenseRows[${i}].label=this.value">
+
+          <input type="number" class="form-input" style="padding: 6px 8px; font-size: 12px" placeholder="Qty" value="${r.qty || ''}" oninput="App.orders.updateExpenseQty(${i}, this.value)">
+
+          <input type="number" class="form-input" style="padding: 6px 8px; font-size: 12px" placeholder="₹ Amt" value="${r.amount}" min="0" oninput="App.orders.expenseRows[${i}].amount=Number(this.value)||0">
+          
+          <button class="btn btn-icon btn-danger btn-sm" onclick="App.orders.removeExpenseRow(${i})">✕</button>
+        </div>
+      `).join('');
+    },
+
+    linkExpenseToInventory(index, invId) {
+      const row = this.expenseRows[index];
+      row.inventoryId = invId;
+      if (invId && invId !== 'custom') {
+        const item = App.state.inventory.find(i => i.id === invId);
+        if (item) {
+          row.label = item.name;
+          row.qty = row.qty || 1;
+          row.amount = item.costPrice * row.qty;
+        }
+      } else if (invId === 'custom') {
+        row.label = '';
+        row.qty = 0;
+      }
+      this.renderExpenseRows();
+    },
+
+    updateExpenseQty(index, qty) {
+      qty = Number(qty) || 0;
+      const row = this.expenseRows[index];
+      row.qty = qty;
+      const item = App.state.inventory.find(i => i.id === row.inventoryId);
+      if (item) {
+        row.amount = Math.round(item.costPrice * qty);
+      }
+      this.renderExpenseRows();
+    },
+
+    removeExpenseRow(i) {
+      this.expenseRows.splice(i, 1);
+      this.renderExpenseRows();
+    },
+
+    async save() {
+      const name = document.getElementById('fCustomerName').value.trim();
+      const service = document.getElementById('fServiceType').value;
+      const orderDate = document.getElementById('fOrderDate').value;
+      const deliveryDate = document.getElementById('fDeliveryDate').value;
+      const totalPrice = Number(document.getElementById('fTotalPrice').value) || 0;
+
+      if (!name) { toast('Customer name is required', 'error'); return; }
+      if (!service) { toast('Service type is required', 'error'); return; }
+      if (!orderDate) { toast('Order date is required', 'error'); return; }
+      if (!deliveryDate) { toast('Delivery date is required', 'error'); return; }
+      if (deliveryDate < orderDate) { toast('Delivery date cannot be before order date', 'error'); return; }
+      if (totalPrice < 0) { toast('Total price must be non-negative', 'error'); return; }
+
+      const id = document.getElementById('orderId').value || Util.uuid();
+      const isNew = !document.getElementById('orderId').value;
+      const advance = Number(document.getElementById('fAdvancePaid').value) || 0;
+      const balance = Math.max(0, totalPrice - advance);
+      const status = balance <= 0 ? 'delivered' : (document.getElementById('fStatus').value || 'pending');
+
+      const order = {
+        id,
+        orderNumber: isNew ? Util.generateOrderNumber(App.state.orders) : (App.state.orders.find(o => o.id === id)?.orderNumber || Util.generateOrderNumber(App.state.orders)),
+        customerName: name,
+        customerPhone: document.getElementById('fCustomerPhone').value.trim(),
+        serviceType: service,
+        status: status,
+        orderDate,
+        deliveryDate,
+        totalPrice,
+        advancePaid: advance,
+        balanceDue: balance,
+        description: document.getElementById('fDescription').value.trim(),
+        notes: document.getElementById('fNotes').value.trim(),
+        createdAt: isNew ? new Date().toISOString() : (App.state.orders.find(o => o.id === id)?.createdAt || new Date().toISOString()),
+        updatedAt: new Date().toISOString()
+      };
+
+      await DB.put('orders', order);
+
+      // Save expenses manually
+      const oldExps = App.state.expenses.filter(e => e.orderId === id);
+      
+      // Return stock for old expenses if they had inventoryId and qty
+      for (const e of oldExps) {
+        if (e.inventoryId && e.inventoryId !== 'custom' && e.qty) {
+          const item = App.state.inventory.find(inv => inv.id === e.inventoryId);
+          if (item) {
+            item.currentStock = Number(item.currentStock) + Number(e.qty);
+            await DB.put('inventory', item);
+          }
+        }
+        await DB.del('expenses', e.id);
+      }
+
+      const newExps = this.expenseRows.map(r => ({
+        id: r.id || Util.uuid(),
+        orderId: id,
+        inventoryId: r.inventoryId,
+        qty: r.qty,
+        category: r.category,
+        label: r.label,
+        amount: Number(r.amount) || 0,
+        date: r.date || order.orderDate
+      }));
+
+      for (const e of newExps) {
+        await DB.put('expenses', e);
+        // Deduct stock for new expenses
+        if (e.inventoryId && e.inventoryId !== 'custom' && e.qty) {
+          const item = App.state.inventory.find(inv => inv.id === e.inventoryId);
+          if (item) {
+            item.currentStock = Math.max(0, Number(item.currentStock) - Number(e.qty));
+            await DB.put('inventory', item);
+          }
+        }
+      }
+
+      // Reload state
+      App.state.orders = await DB.getAll('orders');
+      App.state.expenses = await DB.getAll('expenses');
+      App.state.inventory = await DB.getAll('inventory');
+
+      this.closeModal();
+      toast(isNew ? 'Order created!' : 'Order updated!', 'success');
+      this.refresh();
+      App.dashboard.refresh();
+    },
+
+    async deleteOrder() {
+      const id = document.getElementById('orderId').value;
+      if (!id) return;
+      const ok = await App.confirm.show('Delete Order?', 'This will permanently delete the order and all its expenses. This cannot be undone.', '🗑️', 'Delete');
+      if (!ok) return;
+
+      const exps = App.state.expenses.filter(e => e.orderId === id);
+      for (const e of exps) {
+        if (e.inventoryId && e.inventoryId !== 'custom' && e.qty) {
+          const item = App.state.inventory.find(inv => inv.id === e.inventoryId);
+          if (item) {
+            item.currentStock = Number(item.currentStock) + Number(e.qty);
+            await DB.put('inventory', item);
+          }
+        }
+        await DB.del('expenses', e.id);
+      }
+      
+      await DB.del('orders', id);
+      App.state.orders = await DB.getAll('orders');
+      App.state.expenses = await DB.getAll('expenses');
+      App.state.inventory = await DB.getAll('inventory');
+      this.closeModal();
+      toast('Order deleted', 'warning');
+      this.refresh();
+      App.dashboard.refresh();
+    },
+
+    async duplicate() {
+      const id = document.getElementById('orderId').value;
+      const order = App.state.orders.find(o => o.id === id);
+      if (!order) return;
+      const newId = Util.uuid();
+      const newOrder = {
+        ...order,
+        id: newId,
+        orderNumber: Util.generateOrderNumber(App.state.orders),
+        orderDate: Util.today(),
+        deliveryDate: '',
+        status: 'pending',
+        advancePaid: 0,
+        balanceDue: order.totalPrice,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      await DB.put('orders', newOrder);
+      App.state.orders = await DB.getAll('orders');
+      this.closeModal();
+      toast('Order duplicated!', 'success');
+      this.refresh();
+      this.openEdit(newId);
+    }
+  },
+
+  // ── EXPENSES ──────────────────────────────────────────────
+  expenses: {
+    init() {
+      document.getElementById('expenseMonthFilter').value = Util.thisMonth();
+      this.load();
+    },
+
+    async load() {
+      const month = document.getElementById('expenseMonthFilter').value || Util.thisMonth();
+      const [from, to] = Util.getMonthRange(month);
+      const expenses = App.state.expenses;
+
+      const genExps = expenses.filter(e => !e.orderId && Util.inRange(e.date, from, to));
+      const orderExps = expenses.filter(e => e.orderId && Util.inRange(e.date, from, to));
+
+      const genTotal = genExps.reduce((s, e) => s + Number(e.amount || 0), 0);
+      const orderTotal = orderExps.reduce((s, e) => s + Number(e.amount || 0), 0);
+
+      document.getElementById('genExpTotal').textContent = Util.fmtCurrency(genTotal + orderTotal);
+      document.getElementById('genExpOrders').textContent = Util.fmtCurrency(orderTotal);
+      document.getElementById('genExpOverhead').textContent = Util.fmtCurrency(genTotal);
+
+      const el = document.getElementById('generalExpensesList');
+      if (!expenses.filter(e => Util.inRange(e.date, from, to)).length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">💸</div><div class="empty-title">No expenses found</div><div class="empty-msg">No expenses recorded for this month</div></div>`;
+        return;
+      }
+
+      const allExps = expenses.filter(e => Util.inRange(e.date, from, to)).sort((a,b)=>b.date.localeCompare(a.date));
+      const catLabels = { electricity: '⚡ Electricity', rent: '🏪 Shop Rent', salary: '👷 Staff Salary', internet: '📡 Internet/Phone', maintenance: '🔧 Maintenance', other: '📌 Other' };
+      
+      el.innerHTML = allExps.map(e => {
+        const order = e.orderId ? App.state.orders.find(o => o.id === e.orderId) : null;
+        const subtext = order ? `Order: ${order.orderNumber} | ${order.customerName}` : (e.label || '');
+        const category = e.orderId ? '🛠️ Order Expense' : (catLabels[e.category] || e.category);
+        
+        return `
+          <div class="balance-row" ${e.orderId ? `onclick="App.orders.openEdit('${e.orderId}')"` : `onclick="App.expenses.openEdit('${e.id}')"`}>
+            <div>
+              <div style="font-weight:600;font-size:14px">${category}</div>
+              <div class="text-muted">${subtext} &nbsp;|&nbsp; ${Util.fmtDate(e.date)}</div>
+            </div>
+            <div class="balance-amount" style="color:var(--danger)">${Util.fmtCurrency(e.amount)}</div>
+          </div>
+        `;
+      }).join('');
+    },
+
+    openAdd() {
+      document.getElementById('expenseModalTitle').textContent = '➕ Add Expense';
+      document.getElementById('expenseId').value = '';
+      document.getElementById('fExpCat').value = 'electricity';
+      document.getElementById('fExpAmount').value = '';
+      document.getElementById('fExpLabel').value = '';
+      document.getElementById('fExpDate').value = Util.today();
+      document.getElementById('deleteExpenseBtn').style.display = 'none';
+      document.getElementById('expenseModal').classList.add('open');
+    },
+
+    openEdit(id) {
+      const exp = App.state.expenses.find(e => e.id === id);
+      if (!exp) return;
+      document.getElementById('expenseModalTitle').textContent = '✏️ Edit Expense';
+      document.getElementById('expenseId').value = exp.id;
+      document.getElementById('fExpCat').value = exp.category;
+      document.getElementById('fExpAmount').value = exp.amount;
+      document.getElementById('fExpLabel').value = exp.label || '';
+      document.getElementById('fExpDate').value = exp.date;
+      document.getElementById('deleteExpenseBtn').style.display = 'inline-flex';
+      document.getElementById('expenseModal').classList.add('open');
+    },
+
+    closeModal() {
+      document.getElementById('expenseModal').classList.remove('open');
+    },
+
+    async save() {
+      const amount = Number(document.getElementById('fExpAmount').value);
+      const date = document.getElementById('fExpDate').value;
+      if (!amount || amount <= 0) { toast('Enter a valid amount', 'error'); return; }
+      if (!date) { toast('Date is required', 'error'); return; }
+      const id = document.getElementById('expenseId').value || Util.uuid();
+      const exp = {
+        id,
+        orderId: null,
+        category: document.getElementById('fExpCat').value,
+        label: document.getElementById('fExpLabel').value.trim(),
+        amount,
+        date
+      };
+      await DB.put('expenses', exp);
+      App.state.expenses = await DB.getAll('expenses');
+      this.closeModal();
+      toast('Expense saved!', 'success');
+      this.load();
+      App.dashboard.refresh();
+    },
+
+    async deleteExpense() {
+      const id = document.getElementById('expenseId').value;
+      const ok = await App.confirm.show('Delete Expense?', 'This will permanently delete this expense record.', '🗑️', 'Delete');
+      if (!ok) return;
+      await DB.del('expenses', id);
+      App.state.expenses = await DB.getAll('expenses');
+      this.closeModal();
+      toast('Expense deleted', 'warning');
+      this.load();
+      App.dashboard.refresh();
+    },
+
+    exportCSV() {
+      const month = document.getElementById('expenseMonthFilter').value || Util.thisMonth();
+      const [from, to] = Util.getMonthRange(month);
+      const expenses = App.state.expenses.filter(e => Util.inRange(e.date, from, to));
+      
+      if (!expenses.length) { toast('No expenses to export for this month', 'warning'); return; }
+
+      const headers = ['Date', 'Order #', 'Category', 'Description', 'Amount'];
+      const catLabels = { electricity: 'Electricity', rent: 'Shop Rent', salary: 'Staff Salary', internet: 'Internet/Phone', maintenance: 'Maintenance', other: 'Other' };
+      
+      const rows = expenses.sort((a,b)=>a.date.localeCompare(b.date)).map(e => {
+        const order = e.orderId ? App.state.orders.find(o => o.id === e.orderId) : null;
+        return [
+          e.date,
+          order ? order.orderNumber : '—',
+          e.orderId ? 'Order Expense' : (catLabels[e.category] || e.category),
+          e.label || (order ? order.customerName : ''),
+          e.amount
+        ];
+      });
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => {
+          const str = String(cell);
+          return (str.includes(',') || str.includes('"') || str.includes('\n')) ? `"${str.replace(/"/g, '""')}"` : str;
+        }).join(','))
+      ].join('\n');
+
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `ramarts-expenses-${month}.csv`;
+      a.click();
+      toast('Expenses CSV exported!', 'success');
+    },
+
+    exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const month = document.getElementById('expenseMonthFilter').value || Util.thisMonth();
+      const [from, to] = Util.getMonthRange(month);
+      const expenses = App.state.expenses.filter(e => Util.inRange(e.date, from, to));
+
+      if (!expenses.length) { toast('No expenses to export for this month', 'warning'); return; }
+
+      // Title
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.setTextColor(26, 26, 46);
+      doc.text('RamArts Expenses Report', 14, 20);
+
+      // Info
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      const [y, m] = month.split('-');
+      const monthName = new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+      doc.text(`Month: ${monthName} | Generated: ${Util.fmtDate(Util.today())}`, 14, 28);
+
+      // Accent Line
+      doc.setDrawColor(230, 126, 34);
+      doc.setLineWidth(0.5);
+      doc.line(14, 32, 196, 32);
+
+      const catLabels = { electricity: 'Electricity', rent: 'Shop Rent', salary: 'Staff Salary', internet: 'Internet/Phone', maintenance: 'Maintenance', other: 'Other' };
+      const tableRows = expenses.sort((a,b)=>a.date.localeCompare(b.date)).map(e => {
+        const order = e.orderId ? App.state.orders.find(o => o.id === e.orderId) : null;
+        return [
+          Util.fmtDate(e.date),
+          order ? order.orderNumber : '—',
+          e.orderId ? 'Order Expense' : (catLabels[e.category] || e.category),
+          e.label || (order ? order.customerName : '—'),
+          `Rs. ${e.amount.toLocaleString('en-IN')}`
+        ];
+      });
+
+      const total = expenses.reduce((s, e) => s + e.amount, 0);
+      tableRows.push(['', '', '', { content: 'TOTAL:', styles: { fontStyle: 'bold', halign: 'right' } }, { content: `Rs. ${total.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold' } }]);
+
+      doc.autoTable({
+        head: [['Date', 'Order #', 'Category', 'Description', 'Amount']],
+        body: tableRows,
+        startY: 40,
+        margin: { horizontal: 14 },
+        styles: { font: 'helvetica', fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: [26, 26, 46], textColor: [255, 255, 255] },
+        alternateRowStyles: { fillColor: [250, 250, 252] },
+        columnStyles: { 4: { halign: 'right' } }
+      });
+
+      doc.save(`ramarts-expenses-${month}.pdf`);
+      toast('Expenses PDF exported!', 'success');
+    }
+  },
+
+  // ── INVENTORY ─────────────────────────────────────────────
+  inventory: {
+    init() {
+      this.load();
+    },
+
+    async load() {
+      App.state.inventory = await DB.getAll('inventory');
+      this.render();
+    },
+
+    render() {
+      const q = (document.getElementById('inventorySearch')?.value || '').toLowerCase();
+      const items = App.state.inventory.filter(i => i.name.toLowerCase().includes(q));
+      
+      const el = document.getElementById('inventoryList');
+      if (!el) return;
+
+      if (!items.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">No material found</div></div>`;
+        return;
+      }
+
+      el.innerHTML = items.sort((a,b)=>a.name.localeCompare(b.name)).map(i => {
+        const isLow = Number(i.currentStock) <= Number(i.minStock);
+        return `
+          <div class="order-card" onclick="App.inventory.openEdit('${i.id}')">
+            <div class="order-card-left">
+              <div class="order-customer">${i.name}</div>
+              <div class="order-service">Unit: ${i.unit} &nbsp;|&nbsp; Cost: ${Util.fmtCurrency(i.costPrice)}</div>
+              <div class="order-meta">
+                ${isLow ? '<span class="overdue-badge">⚠️ Low Stock</span>' : '<span class="badge badge-ready">Stock OK</span>'}
+                <span class="meta-chip">Min: ${i.minStock} ${i.unit}</span>
+              </div>
+            </div>
+            <div class="order-card-right">
+              <div class="order-amount ${isLow?'text-danger':''}">${i.currentStock}</div>
+              <div class="order-date">${i.unit} available</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    },
+
+    openAdd() {
+      document.getElementById('inventoryModalTitle').textContent = '➕ Add Material';
+      document.getElementById('invId').value = '';
+      document.getElementById('fInvName').value = '';
+      document.getElementById('fInvStock').value = '';
+      document.getElementById('fInvUnit').value = 'sqft';
+      document.getElementById('fInvMin').value = '';
+      document.getElementById('fInvCost').value = '';
+      document.getElementById('deleteInvBtn').style.display = 'none';
+      document.getElementById('inventoryModal').classList.add('open');
+    },
+
+    openEdit(id) {
+      const i = App.state.inventory.find(item => item.id === id);
+      if (!i) return;
+      document.getElementById('inventoryModalTitle').textContent = '✏️ Edit Material';
+      document.getElementById('invId').value = i.id;
+      document.getElementById('fInvName').value = i.name;
+      document.getElementById('fInvStock').value = i.currentStock;
+      document.getElementById('fInvUnit').value = i.unit;
+      document.getElementById('fInvMin').value = i.minStock;
+      document.getElementById('fInvCost').value = i.costPrice;
+      document.getElementById('deleteInvBtn').style.display = 'inline-flex';
+      document.getElementById('inventoryModal').classList.add('open');
+    },
+
+    closeModal() {
+      document.getElementById('inventoryModal').classList.remove('open');
+    },
+
+    async save() {
+      const name = document.getElementById('fInvName').value.trim();
+      const stock = Number(document.getElementById('fInvStock').value) || 0;
+      const unit = document.getElementById('fInvUnit').value;
+      const min = Number(document.getElementById('fInvMin').value) || 0;
+      const cost = Number(document.getElementById('fInvCost').value) || 0;
+
+      if (!name) { toast('Name is required', 'error'); return; }
+
+      const id = document.getElementById('invId').value || Util.uuid();
+      const item = { id, name, currentStock: stock, unit, minStock: min, costPrice: cost };
+      
+      await DB.put('inventory', item);
+      await this.load();
+      this.closeModal();
+      toast('Inventory updated!', 'success');
+      App.dashboard.refresh();
+    },
+
+    async deleteItem() {
+      const id = document.getElementById('invId').value;
+      const ok = await App.confirm.show('Delete Material?', 'This will permanently remove this material from inventory.', '🗑️', 'Delete');
+      if (!ok) return;
+      await DB.del('inventory', id);
+      await this.load();
+      this.closeModal();
+      toast('Material removed', 'warning');
+      App.dashboard.refresh();
+    }
+  },
+
+  // ── REPORTS ───────────────────────────────────────────────
+  reports: {
+    init() {
+      document.getElementById('reportDate').value = Util.today();
+      document.getElementById('reportMonth').value = Util.thisMonth();
+      document.getElementById('reportYear').value = Util.thisYear();
+      this.updateControls();
+      this.load();
+    },
+
+    updateControls() {
+      const type = document.getElementById('reportType').value;
+      document.getElementById('reportDate').style.display = type === 'daily' ? '' : 'none';
+      document.getElementById('reportMonth').style.display = ['monthly','service'].includes(type) ? '' : 'none';
+      document.getElementById('reportYear').style.display = type === 'yearly' ? '' : 'none';
+    },
+
+    load() {
+      this.updateControls();
+      const type = document.getElementById('reportType').value;
+      if (type === 'daily') this.renderDaily();
+      else if (type === 'monthly') this.renderMonthly();
+      else if (type === 'yearly') this.renderYearly();
+      else if (type === 'outstanding') this.renderOutstanding();
+      else if (type === 'service') this.renderService();
+    },
+
+    renderDaily() {
+      const date = document.getElementById('reportDate').value;
+      const orders = App.state.orders.filter(o => o.orderDate === date);
+      const expenses = App.state.expenses.filter(e => e.date === date);
+      const income = orders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.totalPrice || 0), 0);
+      const exp = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+
+      document.getElementById('reportContent').innerHTML = `
+        <div class="card mb-16">
+          <div class="card-title" style="margin-bottom:12px">📅 Daily Summary — ${Util.fmtDate(date)}</div>
+          <div class="summary-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:0">
+            <div class="summary-card" style="padding:14px"><div class="sc-label">Orders</div><div class="sc-value">${orders.length}</div></div>
+            <div class="summary-card" style="padding:14px"><div class="sc-label">Income</div><div class="sc-value rupee">${Util.fmtCurrency(income)}</div></div>
+            <div class="summary-card" style="padding:14px"><div class="sc-label">Expenses</div><div class="sc-value rupee">${Util.fmtCurrency(exp)}</div></div>
+          </div>
+        </div>
+        <div class="card mb-16">
+          <div class="card-header" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center">
+            <div class="card-title" style="margin-bottom:0">Orders</div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportPDF(0)">⬇️ PDF</button>
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportCSV(0)">📊 CSV</button>
+            </div>
+          </div>
+          ${!orders.length ? '<div class="empty-state"><div class="empty-icon">📋</div><div>No orders on this date</div></div>' : `
+          <table class="report-table">
+            <thead><tr><th>Order #</th><th>Customer</th><th>Service</th><th>Status</th><th>Total</th><th>Balance</th></tr></thead>
+            <tbody>${orders.map(o => `<tr><td class="font-mono"><a href="javascript:void(0)" onclick="App.nav.go('orders'); App.orders.openEdit('${o.id}')" class="text-primary" style="text-decoration:none; font-weight:600">${o.orderNumber}</a></td><td>${o.customerName}</td><td>${o.serviceType}</td><td><span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span></td><td>${Util.fmtCurrency(o.totalPrice)}</td><td>${Number(o.balanceDue) > 0 ? `<span class="text-danger">${Util.fmtCurrency(o.balanceDue)}</span>` : '<span class="text-success">Paid</span>'}</td></tr>`).join('')}</tbody>
+          </table>`}
+        </div>
+        <div class="card">
+          <div class="card-header" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center">
+            <div class="card-title" style="margin-bottom:0">Expenses</div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportPDF(1)">⬇️ PDF</button>
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportCSV(1)">📊 CSV</button>
+            </div>
+          </div>
+          ${!expenses.length ? '<div class="empty-state"><div class="empty-icon">💸</div><div>No expenses on this date</div></div>' : `
+          <table class="report-table">
+            <thead><tr><th>Order #</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead>
+            <tbody>${expenses.map(e => {
+              const order = e.orderId ? App.state.orders.find(o => o.id === e.orderId) : null;
+              const orderNum = order ? `<a href="javascript:void(0)" onclick="App.nav.go('orders'); App.orders.openEdit('${order.id}')" class="text-primary" style="text-decoration:none; font-weight:600">${order.orderNumber}</a>` : '—';
+              return `<tr><td class="font-mono">${orderNum}</td><td>${e.category}</td><td>${e.label || '—'}</td><td>${Util.fmtCurrency(e.amount)}</td></tr>`;
+            }).join('')}</tbody>
+          </table>`}
+        </div>
+      `;
+    },
+
+    renderMonthly() {
+      const month = document.getElementById('reportMonth').value;
+      const [from, to] = Util.getMonthRange(month);
+      const orders = App.state.orders.filter(o => Util.inRange(o.orderDate, from, to));
+      const expenses = App.state.expenses.filter(e => Util.inRange(e.date, from, to));
+      const income = orders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.totalPrice || 0), 0);
+      const expTotal = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+      const profit = income - expTotal;
+      const [y, m] = month.split('-');
+      const monthName = new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
+      document.getElementById('reportContent').innerHTML = `
+        <div class="card mb-16">
+          <div class="card-title" style="margin-bottom:12px">📆 Monthly Report — ${monthName}</div>
+          <div class="summary-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:0">
+            <div class="summary-card accent" style="padding:14px"><div class="sc-label">Income</div><div class="sc-value rupee">${Util.fmtCurrency(income)}</div></div>
+            <div class="summary-card" style="padding:14px"><div class="sc-label">Expenses</div><div class="sc-value rupee">${Util.fmtCurrency(expTotal)}</div></div>
+            <div class="summary-card" style="padding:14px"><div class="sc-label">Net Profit</div><div class="sc-value rupee ${profit>=0?'text-success':'text-danger'}">${Util.fmtCurrency(profit)}</div></div>
+          </div>
+        </div>
+        <div class="card mb-16">
+          <div class="card-header" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center">
+            <div class="card-title" style="margin-bottom:0">All Orders (${orders.length})</div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportPDF(0)">⬇️ PDF</button>
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportCSV(0)">📊 CSV</button>
+            </div>
+          </div>
+          ${!orders.length ? '<div class="empty-state"><div class="empty-icon">📋</div><div>No orders this month</div></div>' : `
+          <table class="report-table">
+            <thead><tr><th>Order #</th><th>Date</th><th>Customer</th><th>Service</th><th>Status</th><th>Total</th><th>Balance</th></tr></thead>
+            <tbody>${orders.sort((a,b)=>a.orderDate.localeCompare(b.orderDate)).map(o => `<tr><td class="font-mono"><a href="javascript:void(0)" onclick="App.nav.go('orders'); App.orders.openEdit('${o.id}')" class="text-primary" style="text-decoration:none; font-weight:600">${o.orderNumber}</a></td><td>${Util.fmtDate(o.orderDate)}</td><td>${o.customerName}</td><td>${o.serviceType}</td><td><span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span></td><td>${Util.fmtCurrency(o.totalPrice)}</td><td>${Number(o.balanceDue) > 0 ? `<span class="text-danger">${Util.fmtCurrency(o.balanceDue)}</span>` : '<span class="text-success">Paid</span>'}</td></tr>`).join('')}</tbody>
+          </table>`}
+        </div>
+        <div class="card">
+          <div class="card-header" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center">
+            <div class="card-title" style="margin-bottom:0">Expenses (${expenses.length})</div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportPDF(1)">⬇️ PDF</button>
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportCSV(1)">📊 CSV</button>
+            </div>
+          </div>
+          ${!expenses.length ? '<div class="empty-state"><div class="empty-icon">💸</div><div>No expenses this month</div></div>' : `
+          <table class="report-table">
+            <thead><tr><th>Date</th><th>Order #</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead>
+            <tbody>${expenses.sort((a,b)=>a.date.localeCompare(b.date)).map(e => {
+              const order = e.orderId ? App.state.orders.find(o => o.id === e.orderId) : null;
+              const orderNum = order ? `<a href="javascript:void(0)" onclick="App.nav.go('orders'); App.orders.openEdit('${order.id}')" class="text-primary" style="text-decoration:none; font-weight:600">${order.orderNumber}</a>` : '—';
+              return `<tr><td>${Util.fmtDate(e.date)}</td><td class="font-mono">${orderNum}</td><td>${e.category}</td><td>${e.label || '—'}</td><td>${Util.fmtCurrency(e.amount)}</td></tr>`;
+            }).join('')}</tbody>
+          </table>`}
+        </div>
+      `;
+    },
+
+    renderYearly() {
+      const year = parseInt(document.getElementById('reportYear').value) || Util.thisYear();
+      const [from, to] = Util.getYearRange(year);
+      const orders = App.state.orders.filter(o => Util.inRange(o.orderDate, from, to));
+      const expenses = App.state.expenses.filter(e => Util.inRange(e.date, from, to));
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const rows = monthNames.map((mn, mi) => {
+        const mFrom = `${year}-${String(mi+1).padStart(2,'0')}-01`;
+        const mTo = `${year}-${String(mi+1).padStart(2,'0')}-${new Date(year, mi+1, 0).getDate()}`;
+        const mOrders = orders.filter(o => Util.inRange(o.orderDate, mFrom, mTo));
+        const mIncome = mOrders.filter(o => o.status === 'delivered').reduce((s, o) => s + Number(o.totalPrice || 0), 0);
+        const mExp = expenses.filter(e => Util.inRange(e.date, mFrom, mTo)).reduce((s, e) => s + Number(e.amount || 0), 0);
+        return { mn, count: mOrders.length, income: mIncome, exp: mExp, profit: mIncome - mExp };
+      });
+
+      const totIncome = rows.reduce((s, r) => s + r.income, 0);
+      const totExp = rows.reduce((s, r) => s + r.exp, 0);
+
+      document.getElementById('reportContent').innerHTML = `
+        <div class="card mb-16">
+          <div class="card-title" style="margin-bottom:12px">📊 Yearly Report — ${year}</div>
+          <div class="summary-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:0">
+            <div class="summary-card accent" style="padding:14px"><div class="sc-label">Annual Income</div><div class="sc-value rupee">${Util.fmtCurrency(totIncome)}</div></div>
+            <div class="summary-card" style="padding:14px"><div class="sc-label">Annual Expenses</div><div class="sc-value rupee">${Util.fmtCurrency(totExp)}</div></div>
+            <div class="summary-card" style="padding:14px"><div class="sc-label">Annual Profit</div><div class="sc-value rupee ${totIncome-totExp>=0?'text-success':'text-danger'}">${Util.fmtCurrency(totIncome-totExp)}</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center">
+            <div class="card-title" style="margin-bottom:0">Month-by-Month Breakdown</div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportPDF(0)">⬇️ PDF</button>
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportCSV(0)">📊 CSV</button>
+            </div>
+          </div>
+          <table class="report-table">
+            <thead><tr><th>Month</th><th>Orders</th><th>Income</th><th>Expenses</th><th>Profit</th></tr></thead>
+            <tbody>
+              ${rows.map(r => `<tr><td>${r.mn}</td><td>${r.count}</td><td>${Util.fmtCurrency(r.income)}</td><td>${Util.fmtCurrency(r.exp)}</td><td class="${r.profit>=0?'text-success':'text-danger'}">${Util.fmtCurrency(r.profit)}</td></tr>`).join('')}
+              <tr style="font-weight:700;background:var(--bg-main)"><td>Total</td><td>${orders.length}</td><td>${Util.fmtCurrency(totIncome)}</td><td>${Util.fmtCurrency(totExp)}</td><td class="${totIncome-totExp>=0?'text-success':'text-danger'}">${Util.fmtCurrency(totIncome-totExp)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    },
+
+    renderOutstanding() {
+      const pending = App.state.orders.filter(o => o.status !== 'delivered' && Number(o.balanceDue) > 0)
+        .sort((a, b) => (a.deliveryDate || '').localeCompare(b.deliveryDate || ''));
+      const total = pending.reduce((s, o) => s + Number(o.balanceDue || 0), 0);
+
+      document.getElementById('reportContent').innerHTML = `
+        <div class="card mb-16">
+          <div class="card-title" style="margin-bottom:8px">⏳ Outstanding Balances Report</div>
+          <div class="summary-card" style="max-width:200px"><div class="sc-label">Total Outstanding</div><div class="sc-value rupee text-danger">${Util.fmtCurrency(total)}</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center">
+            <div class="card-title" style="margin-bottom:0">Pending Balances</div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportPDF(0)">⬇️ PDF</button>
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportCSV(0)">📊 CSV</button>
+            </div>
+          </div>
+          ${!pending.length ? '<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">All balances collected!</div></div>' : `
+          <table class="report-table">
+            <thead><tr><th>Order #</th><th>Customer</th><th>Phone</th><th>Service</th><th>Status</th><th>Delivery Date</th><th>Balance Due</th></tr></thead>
+            <tbody>${pending.map(o => `<tr><td class="font-mono"><a href="javascript:void(0)" onclick="App.nav.go('orders'); App.orders.openEdit('${o.id}')" class="text-primary" style="text-decoration:none; font-weight:600">${o.orderNumber}</a></td><td>${o.customerName}</td><td>${o.customerPhone||'—'}</td><td>${o.serviceType}</td><td><span class="badge badge-${o.status}">${App.orders.statusLabel(o.status)}</span></td><td>${Util.fmtDate(o.deliveryDate)}${Util.isOverdue(o)?'<span class="overdue-badge" style="margin-left:4px">Overdue</span>':''}</td><td class="text-danger" style="font-weight:700">${Util.fmtCurrency(o.balanceDue)}</td></tr>`).join('')}</tbody>
+          </table>`}
+        </div>
+      `;
+    },
+
+    renderService() {
+      const month = document.getElementById('reportMonth').value;
+      const [from, to] = Util.getMonthRange(month);
+      const orders = App.state.orders.filter(o => Util.inRange(o.orderDate, from, to));
+      const expenses = App.state.expenses;
+
+      const serviceMap = {};
+      orders.forEach(o => {
+        const s = o.serviceType;
+        if (!serviceMap[s]) serviceMap[s] = { count: 0, income: 0, expenses: 0 };
+        serviceMap[s].count++;
+        if (o.status === 'delivered') serviceMap[s].income += Number(o.totalPrice || 0);
+        const orderExps = expenses.filter(e => e.orderId === o.id).reduce((sum, e) => sum + Number(e.amount || 0), 0);
+        serviceMap[s].expenses += orderExps;
+      });
+
+      const rows = Object.entries(serviceMap).map(([s, d]) => {
+        const profit = d.income - d.expenses;
+        const margin = d.income > 0 ? (profit / d.income) * 100 : 0;
+        return { service: s, ...d, profit, margin };
+      }).sort((a, b) => b.profit - a.profit);
+
+      const [y, m] = month.split('-');
+      const monthName = new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
+      document.getElementById('reportContent').innerHTML = `
+        <div class="card mb-16">
+          <div class="card-header" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center">
+            <div class="card-title" style="margin-bottom:0">🏆 Service Performance — ${monthName}</div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportPDF(0)">⬇️ PDF</button>
+              <button class="btn btn-secondary btn-sm" onclick="App.reports.exportCSV(0)">📊 CSV</button>
+            </div>
+          </div>
+          
+          <div class="chart-container" style="height:250px; margin-bottom:20px">
+            <canvas id="chartServiceProfit"></canvas>
+          </div>
+
+          ${!rows.length ? '<div class="empty-state"><div class="empty-icon">📊</div><div>No data for selected period</div></div>' : `
+          <table class="report-table">
+            <thead><tr><th>Service</th><th>Orders</th><th>Revenue</th><th>Material Cost</th><th>Profit</th><th>Margin</th></tr></thead>
+            <tbody>${rows.map(r => `
+              <tr>
+                <td>${r.service}</td>
+                <td>${r.count}</td>
+                <td>${Util.fmtCurrency(r.income)}</td>
+                <td>${Util.fmtCurrency(r.expenses)}</td>
+                <td class="${r.profit>=0?'text-success':'text-danger'}" style="font-weight:700">${Util.fmtCurrency(r.profit)}</td>
+                <td style="font-weight:600">${r.margin.toFixed(1)}%</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`}
+        </div>
+      `;
+
+      if (rows.length) {
+        const ctx = document.getElementById('chartServiceProfit').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: rows.map(r => r.service),
+            datasets: [
+              { label: 'Revenue', data: rows.map(r => r.income), backgroundColor: '#e67e22', borderRadius: 4 },
+              { label: 'Material Cost', data: rows.map(r => r.expenses), backgroundColor: '#ef4444', borderRadius: 4 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true, position: 'bottom' } },
+            scales: {
+              y: { 
+                beginAtZero: true,
+                ticks: { callback: v => '₹' + v.toLocaleString('en-IN') }
+              }
+            }
+          }
+        });
+      }
+    },
+
+    exportPDF(tableIndex = 0) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      // Add Title
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(26, 26, 46);
+      doc.text('RamArts Print Shop Manager', 14, 20);
+
+      // Add Report Info
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      const type = document.getElementById('reportType').value;
+      const typeLabels = { 
+        daily: 'Daily Summary', 
+        monthly: 'Monthly Report', 
+        yearly: 'Yearly Report', 
+        outstanding: 'Outstanding Balances', 
+        service: 'Service Performance' 
+      };
+      const month = document.getElementById('reportMonth').value;
+      const periodInfo = type === 'outstanding' ? '' : ` | Period: ${month}`;
+      doc.text(`Report: ${typeLabels[type] || type}${periodInfo} | Generated: ${Util.fmtDate(Util.today())}`, 14, 28);
+
+      // Add accent line
+      doc.setDrawColor(230, 126, 34);
+      doc.setLineWidth(1);
+      doc.line(14, 32, 283, 32);
+
+      // Extract table data from DOM
+      const tables = document.querySelectorAll('#reportContent table');
+      const table = tables[tableIndex];
+      if (!table) { 
+        toast('No table data to export', 'warning'); 
+        return; 
+      }
+
+      // Use autoTable for professional structure
+      doc.autoTable({
+        html: table,
+        startY: 40,
+        margin: { horizontal: 14 },
+        styles: {
+          font: 'helvetica',
+          fontSize: 9,
+          cellPadding: 3,
+          textColor: [26, 26, 46],
+          lineColor: [230, 230, 230],
+          lineWidth: 0.1,
+        },
+        headStyles: {
+          fillColor: [26, 26, 46],
+          textColor: [255, 255, 255],
+          fontSize: 10,
+          fontStyle: 'bold',
+          halign: 'left'
+        },
+        alternateRowStyles: {
+          fillColor: [250, 250, 252]
+        },
+        columnStyles: {
+          // Adjust column alignment for numbers
+          6: { halign: 'right' }, // Balance Due / Income
+          5: { halign: 'center' }, // Delivery Date
+        },
+        didParseCell: function(data) {
+          // Replace Rupee symbol and clean up garbled characters for PDF safety
+          if (data.cell.text) {
+            const clean = (txt) => {
+              if (typeof txt !== 'string') return txt;
+              return txt
+                .replace(/₹/g, 'Rs. ')
+                .replace(/&laquo;/g, '<<')
+                .replace(/&raquo;/g, '>>')
+                .replace(/&amp;/g, '&')
+                .replace(/[^\x00-\x7F]/g, '');
+            };
+
+            if (Array.isArray(data.cell.text)) {
+              data.cell.text = data.cell.text.map(clean);
+            } else {
+              data.cell.text = clean(data.cell.text);
+            }
+          }
+        },
+        didDrawPage: function (data) {
+          // Add Footer
+          doc.setFontSize(8);
+          doc.setTextColor(150);
+          const str = `Page ${doc.internal.getNumberOfPages()}`;
+          doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
+        }
+      });
+
+      const sectionName = tableIndex > 0 ? '-section-' + tableIndex : '';
+      doc.save(`ramarts-${type}${sectionName}-${Util.today()}.pdf`);
+      toast('Professional PDF exported!', 'success');
+    },
+
+    exportCSV(tableIndex = 0) {
+      const tables = document.querySelectorAll('#reportContent table');
+      const table = tables[tableIndex];
+      if (!table) { toast('No report data to export', 'warning'); return; }
+
+      const type = document.getElementById('reportType').value;
+      const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent);
+      const rows = [...table.querySelectorAll('tbody tr')].map(tr => 
+        [...tr.querySelectorAll('td')].map(td => {
+          let text = td.textContent.trim();
+          // Clean up Rupee symbol and commas for CSV compatibility
+          return text.replace(/₹/g, '').replace(/,/g, '');
+        })
+      );
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      // Add BOM for UTF-8 Excel compatibility
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const sectionName = tableIndex > 0 ? '-section-' + tableIndex : '';
+      a.download = `ramarts-report-${type}${sectionName}-${Util.today()}.csv`;
+      a.click();
+      toast('CSV report exported!', 'success');
+    }
+  },
+
+  // ── SETTINGS ──────────────────────────────────────────────
+  settings: {
+    init() {
+      this.render();
+    },
+
+    render() {
+      this.renderServiceList();
+    },
+
+    renderServiceList() {
+      const el = document.getElementById('serviceTypeList');
+      el.innerHTML = App.state.serviceTypes.map((s, i) => `
+        <div class="service-item">
+          <span>${s}</span>
+          <div class="service-actions">
+            <button class="btn btn-icon btn-danger btn-sm" onclick="App.settings.removeService(${i})">✕</button>
+          </div>
+        </div>
+      `).join('');
+      App.orders.populateServiceFilters();
+    },
+
+    async addService() {
+      const val = document.getElementById('newServiceInput').value.trim();
+      if (!val) { toast('Enter a service name', 'warning'); return; }
+      if (App.state.serviceTypes.includes(val)) { toast('Service already exists', 'warning'); return; }
+      App.state.serviceTypes.push(val);
+      await DB.setSetting('serviceTypes', App.state.serviceTypes);
+      document.getElementById('newServiceInput').value = '';
+      this.renderServiceList();
+      toast('Service added!', 'success');
+    },
+
+    async removeService(i) {
+      const ok = await App.confirm.show('Remove Service?', `Remove "${App.state.serviceTypes[i]}" from service types?`, '⚠️', 'Remove');
+      if (!ok) return;
+      App.state.serviceTypes.splice(i, 1);
+      await DB.setSetting('serviceTypes', App.state.serviceTypes);
+      this.renderServiceList();
+      toast('Service removed', 'warning');
+    },
+
+    async exportData() {
+      const data = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        orders: App.state.orders,
+        expenses: App.state.expenses,
+        serviceTypes: App.state.serviceTypes
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `ramarts-backup-${Util.today()}.json`;
+      a.click();
+      toast('Backup exported!', 'success');
+    },
+
+    async exportCSV() {
+      const headers = ['Order#', 'Customer', 'Phone', 'Service', 'Status', 'OrderDate', 'DeliveryDate', 'Total', 'Advance', 'Balance', 'Description', 'Notes'];
+      
+      const escapeCSV = (val) => {
+        if (val === null || val === undefined) return '""';
+        const str = String(val);
+        // If the value contains quotes, commas, or newlines, wrap it in quotes and escape internal quotes
+        if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      const rows = App.state.orders.map(o => [
+        o.orderNumber,
+        o.customerName,
+        o.customerPhone || '',
+        o.serviceType,
+        App.orders.statusLabel(o.status),
+        o.orderDate,
+        o.deliveryDate,
+        o.totalPrice,
+        o.advancePaid,
+        o.balanceDue,
+        o.description || '',
+        o.notes || ''
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(r => r.map(escapeCSV).join(','))
+      ].join('\n');
+
+      // Add BOM for UTF-8 Excel compatibility
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `ramarts-orders-${Util.today()}.csv`;
+      a.click();
+      toast('CSV exported!', 'success');
+    },
+
+    async importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const ok = await App.confirm.show('Import Backup?', 'This will REPLACE all existing data with the backup. This cannot be undone.', '⚠️', 'Import');
+      if (!ok) { event.target.value = ''; return; }
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!data.orders || !data.expenses) throw new Error('Invalid format');
+
+        const existingOrders = await DB.getAll('orders');
+        for (const o of existingOrders) await DB.del('orders', o.id);
+        const existingExps = await DB.getAll('expenses');
+        for (const e of existingExps) await DB.del('expenses', e.id);
+
+        for (const o of data.orders) await DB.put('orders', o);
+        for (const e of data.expenses) await DB.put('expenses', e);
+        if (data.serviceTypes) await DB.setSetting('serviceTypes', data.serviceTypes);
+
+        App.state.orders = await DB.getAll('orders');
+        App.state.expenses = await DB.getAll('expenses');
+        App.state.serviceTypes = data.serviceTypes || DEFAULT_SERVICES;
+
+        toast(`Imported ${data.orders.length} orders!`, 'success');
+        App.dashboard.refresh();
+        App.orders.refresh();
+      } catch (e) {
+        toast('Import failed: invalid backup file', 'error');
+      }
+      event.target.value = '';
+    },
+
+    async clearData() {
+      const ok1 = await App.confirm.show('Clear All Data?', 'This will permanently delete ALL orders, expenses, and settings. This CANNOT be undone.', '🗑️', 'Yes, Clear All');
+      if (!ok1) return;
+      const ok2 = await App.confirm.show('Are you absolutely sure?', 'Type YES to confirm deletion of all shop data.', '⚠️', 'Delete Everything');
+      if (!ok2) return;
+
+      const orders = await DB.getAll('orders');
+      for (const o of orders) await DB.del('orders', o.id);
+      const exps = await DB.getAll('expenses');
+      for (const e of exps) await DB.del('expenses', e.id);
+      await DB.setSetting('serviceTypes', DEFAULT_SERVICES);
+
+      App.state.orders = [];
+      App.state.expenses = [];
+      App.state.serviceTypes = DEFAULT_SERVICES;
+
+      toast('All data cleared', 'warning');
+      App.dashboard.refresh();
+      App.orders.refresh();
+      this.render();
+    }
+  },
+
+  // ── PRODUCTION (KANBAN) ───────────────────────────────────
+  production: {
+    init() {
+      this.refresh();
+    },
+
+    refresh() {
+      const el = document.getElementById('kanbanBoard');
+      if (!el) return;
+
+      const orders = App.state.orders.filter(o => o.status !== 'delivered');
+      const columns = [
+        { id: 'pending', title: '🟡 Pending', icon: '⏳' },
+        { id: 'in_progress', title: '🔵 In Progress', icon: '⚙️' },
+        { id: 'ready', title: '🟢 Ready', icon: '✅' }
+      ];
+
+      el.innerHTML = columns.map(col => {
+        const colOrders = orders.filter(o => o.status === col.id)
+          .sort((a,b) => (a.deliveryDate || '').localeCompare(b.deliveryDate || ''));
+        
+        return `
+          <div class="kanban-column">
+            <div class="kanban-column-header">
+              <div class="kanban-column-title">${col.icon} ${col.title}</div>
+              <div class="badge">${colOrders.length}</div>
+            </div>
+            ${colOrders.map(o => {
+              const overdue = Util.isOverdue(o);
+              return `
+                <div class="kanban-card status-${o.status}" onclick="App.orders.openEdit('${o.id}')">
+                  <div class="kanban-card-title">${o.customerName}</div>
+                  <div class="kanban-card-meta">
+                    <div>${o.serviceType}</div>
+                    <div style="margin-top:4px; ${overdue ? 'color:var(--danger);font-weight:700' : ''}">
+                      📅 ${Util.fmtDate(o.deliveryDate)} ${overdue ? '(Overdue)' : ''}
+                    </div>
+                  </div>
+                  <div class="kanban-card-actions">
+                    ${this.renderActions(o)}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+            ${!colOrders.length ? '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px">No orders</div>' : ''}
+          </div>
+        `;
+      }).join('');
+    },
+
+    renderActions(order) {
+      if (order.status === 'pending') {
+        return `<button class="btn btn-secondary btn-icon-sm" style="flex:1" onclick="event.stopPropagation(); App.orders.updateStatus('${order.id}', 'in_progress')">Start Work 🔵</button>`;
+      }
+      if (order.status === 'in_progress') {
+        return `<button class="btn btn-success btn-icon-sm" style="flex:1" onclick="event.stopPropagation(); App.orders.updateStatus('${order.id}', 'ready')">Mark Ready 🟢</button>`;
+      }
+      if (order.status === 'ready') {
+        return `
+          <button class="btn btn-whatsapp btn-icon-sm" style="flex:1" onclick="App.orders.sendWhatsApp('${order.id}', event)">📲 Notify</button>
+          <button class="btn btn-primary btn-icon-sm" style="flex:1" onclick="event.stopPropagation(); App.orders.updateStatus('${order.id}', 'delivered')">Deliver ⚫</button>
+        `;
+      }
+      return '';
+    }
+  },
+
+  // ── PWA ───────────────────────────────────────────────────
+  pwa: {
+    deferredPrompt: null,
+    init() {
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          // Check for updates on load
+          reg.update();
+
+          // If a new service worker is found and starts installing
+          reg.onupdatefound = () => {
+            const installingWorker = reg.installing;
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                  // New update available! Notify user.
+                  this.showUpdateNotify();
+                }
+              }
+            };
+          };
+        }).catch(err => {
+          console.error('ServiceWorker registration failed: ', err);
+        });
+
+        // Ensure the page refreshes only once when the new SW takes over
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return;
+          refreshing = true;
+          window.location.reload();
+        });
+      }
+
+      // Install button
+      window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        this.deferredPrompt = e;
+        document.getElementById('installBtn').style.display = 'inline-flex';
+        document.getElementById('installStatus').textContent = 'Tap "Install App" to add RamArts to your home screen.';
+      });
+
+      document.getElementById('installBtn').addEventListener('click', async () => {
+        if (!this.deferredPrompt) return;
+        this.deferredPrompt.prompt();
+        const { outcome } = await this.deferredPrompt.userChoice;
+        if (outcome === 'accepted') toast('App installed!', 'success');
+        this.deferredPrompt = null;
+        document.getElementById('installBtn').style.display = 'none';
+      });
+
+      window.addEventListener('appinstalled', () => {
+        document.getElementById('installStatus').textContent = '✅ App is installed on your device!';
+      });
+    },
+
+    async showUpdateNotify() {
+      const ok = await App.confirm.show('New Update!', 'A newer version of RamArts is available. Update now to get the latest features?', '🚀', 'Update Now');
+      if (ok) {
+        // The service worker is already skipWaiting() in sw.js, 
+        // but we can manually trigger it if we had a message listener.
+        // For now, since sw.js has self.skipWaiting() in install,
+        // it will activate and trigger 'controllerchange' automatically.
+        window.location.reload();
+      }
+    }
+  }
+};
+
+// ============================================================
+// BOOT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => App.init());
+
+// Close modals on overlay click
+document.getElementById('orderModal').addEventListener('click', e => { if (e.target === e.currentTarget) App.orders.closeModal(); });
+document.getElementById('expenseModal').addEventListener('click', e => { if (e.target === e.currentTarget) App.expenses.closeModal(); });
+document.getElementById('confirmOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) App.confirm.cancel(); });
+
+// Report type change
+document.getElementById('reportType').addEventListener('change', () => App.reports.updateControls());
+</script>
+</body>
+</html>
