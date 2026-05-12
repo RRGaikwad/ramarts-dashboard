@@ -1758,11 +1758,16 @@ img { max-width: 100%; }
       </div>
       <div class="reminder-text-box" style="background:var(--bg-main); padding:12px; border-radius:8px; text-align:left; font-size:13px; border:1px solid var(--border); margin-bottom:16px; white-space:pre-wrap" id="reminderTextContent"></div>
       
+      <div id="reminderStepGuide" style="font-size:12px; color:var(--accent); font-weight:600; margin-bottom:12px; display:none">
+        ✨ QR Image & Text will be copied automatically!
+      </div>
+
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px">
         <button class="btn btn-secondary btn-sm" onclick="App.orders.copyReminderText()">📋 Copy Text</button>
         <button class="btn btn-secondary btn-sm" id="copyQRBtn" onclick="App.orders.copyReminderQR()">🖼️ Copy Image</button>
       </div>
-      <button class="btn btn-whatsapp" style="width:100%; justify-content:center" id="finalWhatsAppBtn">📲 Open WhatsApp & Paste</button>
+      <button class="btn btn-whatsapp" style="width:100%; justify-content:center" id="finalWhatsAppBtn">📲 Copy & Open WhatsApp</button>
+      <p style="font-size:10px; color:var(--text-muted); margin-top:8px">Note: After WhatsApp opens, just <b>Paste (Ctrl+V)</b> to send the scanner image.</p>
     </div>
   </div>
 </div>
@@ -2585,8 +2590,21 @@ const App = {
       
       text.textContent = msg;
       
+      if (scanner) {
+        document.getElementById('reminderStepGuide').style.display = 'block';
+      } else {
+        document.getElementById('reminderStepGuide').style.display = 'none';
+      }
+      
       const phone = Util.cleanPhone(order.customerPhone);
-      whatsappBtn.onclick = () => {
+      whatsappBtn.onclick = async () => {
+        // Try to copy QR automatically first
+        if (scanner) {
+          await this.copyReminderQR(true); // silent copy
+        } else {
+          await this.copyReminderText(true); // silent copy
+        }
+        
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
         window.open(url, '_blank');
       };
@@ -2594,17 +2612,17 @@ const App = {
       modal.classList.add('open');
     },
 
-    async copyReminderText() {
+    async copyReminderText(silent = false) {
       const text = document.getElementById('reminderTextContent').textContent;
       try {
         await navigator.clipboard.writeText(text);
-        toast('Message copied!', 'success');
+        if (!silent) toast('Message copied!', 'success');
       } catch (err) {
-        toast('Failed to copy', 'error');
+        if (!silent) toast('Failed to copy', 'error');
       }
     },
 
-    async copyReminderQR() {
+    async copyReminderQR(silent = false) {
       const scanner = App.state.shopSettings.recentScanners?.[0];
       if (!scanner) return;
       
@@ -2614,10 +2632,10 @@ const App = {
         await navigator.clipboard.write([
           new ClipboardItem({ [blob.type]: blob })
         ]);
-        toast('QR Code copied to clipboard!', 'success');
+        if (!silent) toast('QR Code copied to clipboard!', 'success');
       } catch (err) {
         console.error('Clipboard error:', err);
-        toast('Failed to copy image. Try long-pressing the image to copy/save.', 'error');
+        if (!silent) toast('Failed to auto-copy image. Please copy manually.', 'warning');
       }
     },
 
