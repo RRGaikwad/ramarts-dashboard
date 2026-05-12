@@ -3943,8 +3943,8 @@ const App = {
 document.addEventListener('DOMContentLoaded', () => App.init());
 
 // Close modals on overlay click
-document.getElementById('orderModal').addEventListener('click', e => { if (e.target === e.currentTarget) App.orders.closeModal(); });
-document.getElementById('expenseModal').addEventListener('click', e => { if (e.target === e.currentTarget) App.expenses.closeModal(); });
+// document.getElementById('orderModal').addEventListener('click', e => { if (e.target === e.currentTarget) App.orders.closeModal(); });
+// document.getElementById('expenseModal').addEventListener('click', e => { if (e.target === e.currentTarget) App.expenses.closeModal(); });
 document.getElementById('confirmOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) App.confirm.cancel(); });
 
 // Report type change
