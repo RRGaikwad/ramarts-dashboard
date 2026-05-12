@@ -1744,6 +1744,29 @@ img { max-width: 100%; }
   </div>
 </div>
 
+<!-- ===== PAYMENT REMINDER MODAL ===== -->
+<div class="modal-overlay" id="paymentReminderModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">Payment Reminder</div>
+      <button class="modal-close" onclick="document.getElementById('paymentReminderModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <div id="reminderQRContainer" style="margin-bottom:20px; padding:15px; background:white; border-radius:12px; border:1px solid var(--border)">
+        <img id="reminderQRImage" src="" style="width:200px; height:200px; object-fit:contain; display:block; margin:0 auto">
+        <p style="font-size:11px; color:var(--text-muted); margin-top:8px">Scanner QR Code</p>
+      </div>
+      <div class="reminder-text-box" style="background:var(--bg-main); padding:12px; border-radius:8px; text-align:left; font-size:13px; border:1px solid var(--border); margin-bottom:16px; white-space:pre-wrap" id="reminderTextContent"></div>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px">
+        <button class="btn btn-secondary btn-sm" onclick="App.orders.copyReminderText()">📋 Copy Text</button>
+        <button class="btn btn-secondary btn-sm" id="copyQRBtn" onclick="App.orders.copyReminderQR()">🖼️ Copy Image</button>
+      </div>
+      <button class="btn btn-whatsapp" style="width:100%; justify-content:center" id="finalWhatsAppBtn">📲 Open WhatsApp & Paste</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== CONFIRM DIALOG ===== -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
@@ -2533,8 +2556,69 @@ const App = {
         msg = `Hi ${order.customerName}, regarding your order *${order.orderNumber}* (${order.serviceType}) at ${shop}...`;
       }
 
+      if (type === 'payment_reminder') {
+        this.showPaymentReminderPreview(order, msg);
+        return;
+      }
+
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
       window.open(url, '_blank');
+    },
+
+    showPaymentReminderPreview(order, msg) {
+      const modal = document.getElementById('paymentReminderModal');
+      const img = document.getElementById('reminderQRImage');
+      const text = document.getElementById('reminderTextContent');
+      const whatsappBtn = document.getElementById('finalWhatsAppBtn');
+      const qrContainer = document.getElementById('reminderQRContainer');
+      
+      const scanner = App.state.shopSettings.recentScanners?.[0];
+      
+      if (scanner) {
+        img.src = scanner;
+        qrContainer.style.display = 'block';
+        document.getElementById('copyQRBtn').style.display = 'block';
+      } else {
+        qrContainer.style.display = 'none';
+        document.getElementById('copyQRBtn').style.display = 'none';
+      }
+      
+      text.textContent = msg;
+      
+      const phone = Util.cleanPhone(order.customerPhone);
+      whatsappBtn.onclick = () => {
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+      };
+      
+      modal.classList.add('open');
+    },
+
+    async copyReminderText() {
+      const text = document.getElementById('reminderTextContent').textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        toast('Message copied!', 'success');
+      } catch (err) {
+        toast('Failed to copy', 'error');
+      }
+    },
+
+    async copyReminderQR() {
+      const scanner = App.state.shopSettings.recentScanners?.[0];
+      if (!scanner) return;
+      
+      try {
+        const response = await fetch(scanner);
+        const blob = await response.blob();
+        await navigator.clipboard.write([
+          new ClipboardItem({ [blob.type]: blob })
+        ]);
+        toast('QR Code copied to clipboard!', 'success');
+      } catch (err) {
+        console.error('Clipboard error:', err);
+        toast('Failed to copy image. Try long-pressing the image to copy/save.', 'error');
+      }
     },
 
     init() {
